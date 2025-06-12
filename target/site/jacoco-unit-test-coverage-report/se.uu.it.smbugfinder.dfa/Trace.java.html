@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Trace.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.dfa</a> &gt; <span class="el_source">Trace.java</span></div><h1>Trace.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.dfa;
+
+import java.util.Iterator;
+import java.util.stream.Stream;
+
+import net.automatalib.common.util.Pair;
+import net.automatalib.word.Word;
+
+public class Trace&lt;I,O&gt; implements Iterable&lt;Pair&lt;I,O&gt;&gt; {
+    private Word&lt;I&gt; inputWord;
+    private Word&lt;O&gt; outputWord;
+
+    public Trace(Word&lt;I&gt; inputs, Word&lt;O&gt; outputs) {
+<span class="fc" id="L14">        super();</span>
+<span class="fc" id="L15">        this.inputWord = inputs;</span>
+<span class="fc" id="L16">        this.outputWord = outputs;</span>
+<span class="fc" id="L17">    }</span>
+
+    public Word&lt;I&gt; getInputWord() {
+<span class="fc" id="L20">        return inputWord;</span>
+    }
+    public Word&lt;O&gt; getOutputWord() {
+<span class="nc" id="L23">        return outputWord;</span>
+    }
+
+    public int getLength() {
+<span class="fc" id="L27">        return inputWord.length();</span>
+    }
+
+    public Stream&lt;Pair&lt;I,O&gt;&gt; getInputOutputStream() {
+<span class="fc" id="L31">        Stream.Builder&lt;Pair&lt;I,O&gt;&gt; builder = Stream.builder();</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        for (int i=0; i&lt;getLength(); i++) {</span>
+<span class="fc" id="L33">            builder.add(Pair.of(inputWord.getSymbol(i), outputWord.getSymbol(i)));</span>
+        }
+<span class="fc" id="L35">        return builder.build();</span>
+    }
+
+    @Override
+    public Iterator&lt;Pair&lt;I,O&gt;&gt; iterator() {
+<span class="fc" id="L40">        return getInputOutputStream().iterator();</span>
+    }
+
+    public String toCompactString() {
+<span class="fc" id="L44">        StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L45">        builder.append(&quot;Trace: &quot;);</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        for (int i=0; i&lt;getLength(); i++) {</span>
+<span class="fc" id="L47">            builder.append(inputWord.getSymbol(i) + &quot;/&quot; + outputWord.getSymbol(i)).append(' ');</span>
+        }
+<span class="fc" id="L49">        return builder.toString();</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L54">        return String.format(&quot;Trace: %n  inputs: %s%n  outputs: %s%n&quot;, inputWord, outputWord);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L59">        final int prime = 31;</span>
+<span class="nc" id="L60">        int result = 1;</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        result = prime * result + ((inputWord == null) ? 0 : inputWord.hashCode());</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        result = prime * result + ((outputWord == null) ? 0 : outputWord.hashCode());</span>
+<span class="nc" id="L63">        return result;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (this == obj)</span>
+<span class="nc" id="L69">            return true;</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (obj == null)</span>
+<span class="nc" id="L71">            return false;</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (! (obj instanceof Trace))</span>
+<span class="nc" id="L73">            return false;</span>
+<span class="nc" id="L74">        Trace&lt;?,?&gt; other = (Trace) obj;</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (inputWord == null) {</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            if (other.inputWord != null)</span>
+<span class="nc" id="L77">                return false;</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        } else if (!inputWord.equals(other.inputWord))</span>
+<span class="nc" id="L79">            return false;</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (outputWord == null) {</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">            if (other.outputWord != null)</span>
+<span class="nc" id="L82">                return false;</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        } else if (!outputWord.equals(other.outputWord))</span>
+<span class="nc" id="L84">            return false;</span>
+<span class="nc" id="L85">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StateMachineBugFinderCoreConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder</a> &gt; <span class="el_source">StateMachineBugFinderCoreConfig.java</span></div><h1>StateMachineBugFinderCoreConfig.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder;
+
+import java.time.Duration;
+import java.util.List;
+
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParametersDelegate;
+
+import se.uu.it.smbugfinder.witness.GenerationStrategy;
+import se.uu.it.smbugfinder.witness.SearchConfig;
+
+public class StateMachineBugFinderCoreConfig {
+
+<span class="fc" id="L14">    @Parameter(names = {&quot;-gs&quot;, &quot;-generationStrategy&quot;}, required = false,</span>
+               description = &quot;Witness generation strategy.&quot;)
+    private GenerationStrategy witnessGenerationStrategy = GenerationStrategy.SHORTEST;
+
+    @ParametersDelegate
+    private SearchConfig searchConfig;
+
+<span class="fc" id="L21">    @Parameter(names = {&quot;-vb&quot;, &quot;-validateBugs&quot;}, required = false,</span>
+               description = &quot;Validate the bugs found. Validation requires either an online test harness or a Mealy machine which simulates the SUT.&quot;)
+    private boolean validate = false;
+
+    @Parameter(names = { &quot;-vtl&quot;, &quot;-validationTimeLimit&quot; }, required = false,
+               description = &quot;Bound on the time spent validating.&quot;, converter = DurationConverter.class)
+    private Duration validationTimeLimit;
+
+<span class="fc" id="L29">    @Parameter(names = {&quot;-ub&quot;, &quot;-uncategorizedBound&quot;}, required = false,</span>
+               description = &quot;Bound on the number sequences generated for a general bug pattern that have not been identified by any of the specific bug patterns.&quot;)
+    private int uncategorizedBugBound = 10;
+
+<span class="fc" id="L33">    @Parameter(names = {&quot;-ncb&quot;, &quot;-nonConformingBound&quot;}, required = false,</span>
+               description = &quot;Bound on the number non-conforming sequences generated for a correctness specification.&quot;)
+    private int nonConformingSequenceBound = 10000;
+
+<span class="fc" id="L37">    @Parameter(names = {&quot;-tb&quot;, &quot;-testBound&quot;}, required = false,</span>
+               description = &quot;Bound on the number of tests executed to validate bugs.&quot;)
+    private int bound = 100;
+
+    @Parameter(names = {&quot;-d&quot;, &quot;-debug&quot;}, required = false,
+               description = &quot;Enables a specific debug mode. &quot;
+                 + &quot;EVALUATE_SPECIFIC_BUG_PATTERNS generates and validates witnesses for each general bug pattern until validated witnesses cover all specific bug patterns. &quot;
+                 + &quot;COUNT_GENERATED_WITNESSES counts the number of witnesses that would be generated for each specific bug pattern.&quot;)
+    private DebugMode debugMode;
+
+<span class="fc" id="L47">    @Parameter(names = { &quot;-dwb&quot;, &quot;-debugWitnessBound&quot; }, required = false,</span>
+               description = &quot;Bound on the number of witnesses generated/counted in debug modes EVALUATE_SPECIFIC_BUG_PATTERNS/COUNT_GENERATED_WITNESSES&quot;)
+    private int debugWitnessBound = 100000;
+
+<span class="fc" id="L51">    @Parameter(names = { &quot;-dtl&quot;, &quot;-debugTimeLimit&quot; }, required = false,</span>
+               description = &quot;Time bound for the debug mode EVALUATE_SPECIFIC_BUG_PATTERNS.&quot;, converter = DurationConverter.class)
+<span class="fc" id="L53">    private Duration debugTimeLimit = Duration.ofDays(1);</span>
+
+    @Parameter(names = { &quot;-sbp&quot;, &quot;-selectBugPatterns&quot; }, required = false,
+               description = &quot;Only uses the following bug patterns from the catalogue. To be used, these should be enabled in the patterns file.&quot;)
+    private List&lt;String&gt; selectedBugPatterns;
+
+<span class="fc" id="L59">    public StateMachineBugFinderCoreConfig() {</span>
+<span class="fc" id="L60">        searchConfig = new SearchConfig();</span>
+<span class="fc" id="L61">    }</span>
+
+    public GenerationStrategy getWitnessGenerationStrategy() {
+<span class="nc" id="L64">        return witnessGenerationStrategy;</span>
+    }
+
+    public SearchConfig getSearchConfig() {
+<span class="fc" id="L68">        return searchConfig;</span>
+    }
+
+    public int getBound() {
+<span class="nc" id="L72">        return bound;</span>
+    }
+
+    public DebugMode getDebugMode() {
+<span class="fc" id="L76">        return debugMode;</span>
+    }
+
+    public int getDebugWitnessBound() {
+<span class="nc" id="L80">        return debugWitnessBound;</span>
+    }
+
+    public Duration getDebugTimeLimit() {
+<span class="nc" id="L84">        return debugTimeLimit;</span>
+    }
+
+    public boolean isValidate() {
+<span class="fc" id="L88">        return validate;</span>
+    }
+
+    public Duration getValidationTimeLimit() {
+<span class="nc" id="L92">        return validationTimeLimit;</span>
+    }
+
+    public int getUncategorizedBugBound() {
+<span class="fc" id="L96">        return uncategorizedBugBound;</span>
+    }
+
+    public int getNonConformingSequenceBound() {
+<span class="nc" id="L100">        return nonConformingSequenceBound;</span>
+    }
+
+    public List&lt;String&gt; getSelectedBugPatterns() {
+<span class="fc" id="L104">        return selectedBugPatterns;</span>
+    }
+
+    public void setWitnessGenerationStrategy(GenerationStrategy witnessGenerationStrategy) {
+<span class="nc" id="L108">        this.witnessGenerationStrategy = witnessGenerationStrategy;</span>
+<span class="nc" id="L109">    }</span>
+
+    public void setSearchConfig(SearchConfig searchConfig) {
+<span class="nc" id="L112">        this.searchConfig = searchConfig;</span>
+<span class="nc" id="L113">    }</span>
+
+    public void setValidate(boolean validate) {
+<span class="nc" id="L116">        this.validate = validate;</span>
+<span class="nc" id="L117">    }</span>
+
+    public void setUncategorizedBugBound(int uncategorizedBugBound) {
+<span class="nc" id="L120">        this.uncategorizedBugBound = uncategorizedBugBound;</span>
+<span class="nc" id="L121">    }</span>
+
+    public void setNonConformingSequenceBound(int nonConformingSequenceBound) {
+<span class="nc" id="L124">        this.nonConformingSequenceBound = nonConformingSequenceBound;</span>
+<span class="nc" id="L125">    }</span>
+
+    public void setBound(int bound) {
+<span class="nc" id="L128">        this.bound = bound;</span>
+<span class="nc" id="L129">    }</span>
+
+    public void setDebugMode(DebugMode debugMode) {
+<span class="nc" id="L132">        this.debugMode = debugMode;</span>
+<span class="nc" id="L133">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

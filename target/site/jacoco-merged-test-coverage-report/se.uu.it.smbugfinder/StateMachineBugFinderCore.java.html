@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StateMachineBugFinderCore.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder</a> &gt; <span class="el_source">StateMachineBugFinderCore.java</span></div><h1>StateMachineBugFinderCore.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder;
+
+import java.time.Duration;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.stream.Streams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import net.automatalib.automaton.fsa.DFA;
+import net.automatalib.automaton.transducer.MealyMachine;
+import net.automatalib.word.Word;
+import se.uu.it.smbugfinder.bug.StateMachineBug;
+import se.uu.it.smbugfinder.dfa.DFAAdapter;
+import se.uu.it.smbugfinder.dfa.MealyToDFAConverter;
+import se.uu.it.smbugfinder.dfa.Symbol;
+import se.uu.it.smbugfinder.dfa.SymbolMapping;
+import se.uu.it.smbugfinder.dfa.Trace;
+import se.uu.it.smbugfinder.pattern.AbstractBugPattern;
+import se.uu.it.smbugfinder.pattern.BugPattern;
+import se.uu.it.smbugfinder.pattern.BugPatterns;
+import se.uu.it.smbugfinder.pattern.GeneralBugPattern;
+import se.uu.it.smbugfinder.pattern.UncategorizedBugPattern;
+import se.uu.it.smbugfinder.sut.Counter;
+import se.uu.it.smbugfinder.sut.InputCountingSUT;
+import se.uu.it.smbugfinder.sut.ResetCountingSUT;
+import se.uu.it.smbugfinder.sut.SUT;
+import se.uu.it.smbugfinder.sut.TimedSUT;
+import se.uu.it.smbugfinder.sut.TimeoutException;
+import se.uu.it.smbugfinder.witness.ModelExplorer;
+import se.uu.it.smbugfinder.witness.SearchConfig;
+import se.uu.it.smbugfinder.witness.SearchOrder;
+import se.uu.it.smbugfinder.witness.SequenceGenerator;
+import se.uu.it.smbugfinder.witness.SequenceGeneratorFactory;
+import se.uu.it.smbugfinder.witness.WitnessFinder;
+
+/**
+ * Implements the core of the SMBugFinder tool.
+ * It receives the SUT and bug pattern state machines as class instances.
+ * It can be used without the {@link StateMachineBugFinder} wrapper.
+ */
+public class StateMachineBugFinderCore&lt;I,O&gt; {
+<span class="fc" id="L53">    private static final Logger LOGGER = LoggerFactory.getLogger(StateMachineBugFinderCore.class);</span>
+    private MealyToDFAConverter&lt;I,O&gt; converter;
+    private boolean validate;
+    private StateMachineBugFinderCoreConfig config;
+    private StatisticsTracker tracker;
+    private DFAExporter exporter;
+
+<span class="fc" id="L60">    public StateMachineBugFinderCore(StateMachineBugFinderCoreConfig config) {</span>
+<span class="fc" id="L61">        this.validate = config.isValidate();</span>
+<span class="fc" id="L62">        this.config = config;</span>
+<span class="fc" id="L63">        this.converter = new MealyToDFAConverter&lt;&gt;();</span>
+<span class="fc" id="L64">        this.exporter = (dfa, name) -&gt; {};</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * Sets a converter from Mealy to DFA.
+     * @param converter  a converter of a Mealy machine to a DFA
+     */
+    public void setConverter(MealyToDFAConverter&lt;I,O&gt; converter) {
+<span class="nc" id="L72">        this.converter = converter;</span>
+<span class="nc" id="L73">    }</span>
+
+    /**
+     * Sets the exporter for the generated DFAs. If not set or set to {@code null}, the DFAs are not exported.
+     * @param exporter  a DFA exporter
+     */
+    public void setExporter(DFAExporter exporter) {
+<span class="fc" id="L80">        this.exporter = exporter;</span>
+<span class="fc" id="L81">    }</span>
+
+    public BugFinderResult&lt;I,O&gt; findBugs(BugPatterns patterns, MealyMachine&lt;?,I,?,O&gt; mealy, Collection&lt;I&gt; inputs, SymbolMapping&lt;I,O&gt; mapping, @Nullable SUT&lt;I,O&gt; sut) {
+<span class="fc" id="L84">        List&lt;StateMachineBug&lt;I,O&gt;&gt; bugs = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L85">        tracker = new StatisticsTracker(config, patterns);</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        if (config.getSelectedBugPatterns() != null) {</span>
+<span class="nc" id="L87">            patterns.applySelector(bp -&gt; config.getSelectedBugPatterns().contains(bp.getName()));</span>
+        }
+<span class="fc" id="L89">        tracker.startStateMachineBugFinding(inputs);</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (validate) {</span>
+<span class="fc" id="L91">            ResetCountingSUT&lt;I, O&gt; resetCountingSut = new ResetCountingSUT&lt;&gt;(sut, new Counter(&quot;resets&quot;));</span>
+<span class="fc" id="L92">            InputCountingSUT&lt;I, O&gt; inputCountingSut = new InputCountingSUT&lt;&gt;(resetCountingSut, new Counter(&quot;inputs&quot;));</span>
+<span class="fc" id="L93">            sut = inputCountingSut;</span>
+<span class="fc" id="L94">            tracker.setSutTracking(inputCountingSut.getCounter(), resetCountingSut.getCounter());</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">            if (config.getValidationTimeLimit() != null) {</span>
+<span class="nc" id="L96">                sut = new TimedSUT&lt;I, O&gt;(sut, config.getValidationTimeLimit());</span>
+            }
+        }
+<span class="fc" id="L99">        DFAAdapter sutLanguage = converter.convert(mealy, inputs, mapping);</span>
+<span class="fc" id="L100">        exporter.exportDfa(sutLanguage, &quot;sutLanguage.dot&quot;);</span>
+<span class="fc" id="L101">        List&lt;BugPattern&gt; detectedPatterns = new ArrayList&lt;&gt;();</span>
+
+        // match against each loaded bug pattern
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        for (BugPattern bugPattern : patterns.getSpecificBugPatterns()) {</span>
+<span class="fc" id="L105">            LOGGER.info(&quot;Checking bug pattern {}&quot;, bugPattern.getShortenedName());</span>
+<span class="fc" id="L106">            DFAAdapter bugLanguage = bugPattern.generateBugLanguage();</span>
+
+<span class="fc" id="L108">            exporter.exportDfa(bugLanguage, bugPattern.getShortenedName() + &quot;Language.dot&quot;);</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">            if (bugLanguage.isEmpty()) {</span>
+<span class="fc" id="L110">                LOGGER.info(&quot;The bug pattern {} is an empty language when considering only the input/output labels from the SUT model. &quot;, bugPattern.getName());</span>
+<span class="fc" id="L111">                continue;</span>
+            }
+
+<span class="fc" id="L114">            DFAAdapter sutBugLanguage = bugPattern.generateBugLanguage()</span>
+<span class="fc" id="L115">                    .intersect(sutLanguage)</span>
+<span class="fc" id="L116">                    .minimize();</span>
+
+<span class="fc bfc" id="L118" title="All 2 branches covered.">            if (!sutBugLanguage.isEmpty()) {</span>
+<span class="fc" id="L119">                detectedPatterns.add(bugPattern);</span>
+<span class="fc" id="L120">                LOGGER.info(&quot;sutBugLanguage not empty, finding witness&quot;);</span>
+<span class="fc" id="L121">                exporter.exportDfa(sutBugLanguage, &quot;sut&quot; + bugPattern.getShortenedName() + &quot;Language.dot&quot;);</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">                if (DebugMode.COUNT_GENERATED_WITNESSES.isEnabled(config)) {</span>
+<span class="nc" id="L123">                    SequenceGenerator&lt;Symbol&gt; generator = SequenceGeneratorFactory</span>
+<span class="nc" id="L124">                            .buildGenerator(config.getWitnessGenerationStrategy(), config.getSearchConfig(), null);</span>
+<span class="nc" id="L125">                    Iterable&lt;Word&lt;Symbol&gt;&gt; sequence = generator.generateSequences(sutBugLanguage.getDfa(),</span>
+<span class="nc" id="L126">                            sutBugLanguage.getSymbols());</span>
+<span class="nc" id="L127">                    long count = Streams.of(sequence).limit(config.getDebugWitnessBound()).count();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                    if (count &lt; config.getDebugWitnessBound()) {</span>
+<span class="nc" id="L129">                        LOGGER.info(</span>
+                                &quot;The bug pattern {} would lead to the generation of {} witness(es) for validation.&quot;,
+<span class="nc" id="L131">                                bugPattern.getName(), count);</span>
+                    } else {
+<span class="nc" id="L133">                        LOGGER.info(</span>
+                                &quot;The bug pattern {} would lead to the generation of over {} witness(es) for validation.&quot;,
+<span class="nc" id="L135">                                bugPattern.getName(), config.getDebugWitnessBound());</span>
+                    }
+                }
+<span class="pc bpc" id="L138" title="1 of 4 branches missed.">                if (validate &amp;&amp; !DebugMode.EVALUATE_SPECIFIC_BUG_PATTERNS.isEnabled(config)) {</span>
+                    try {
+<span class="fc" id="L140">                        SequenceGenerator&lt;Symbol&gt; sequenceGenerator = SequenceGeneratorFactory.buildGenerator(config.getWitnessGenerationStrategy(), config.getSearchConfig(), null);</span>
+<span class="fc" id="L141">                        WitnessFinder witnessFinder = new WitnessFinder(sequenceGenerator, config.getBound());</span>
+<span class="fc" id="L142">                        tracker.startValidation(bugPattern);</span>
+<span class="fc" id="L143">                        Trace&lt;I,O&gt; witness = witnessFinder.findWitness(sut, mapping, sutBugLanguage, bugPattern.generateBugLanguage());</span>
+<span class="fc" id="L144">                        tracker.endValidation(bugPattern);</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">                        if (witness != null) {</span>
+<span class="fc" id="L146">                            StateMachineBug&lt;I,O&gt; bug = new StateMachineBug&lt;&gt;(witness, bugPattern);</span>
+<span class="fc" id="L147">                            bug.validationSuccessful();</span>
+<span class="fc" id="L148">                            bugs.add(bug);</span>
+<span class="fc" id="L149">                            LOGGER.info(&quot;Found valid witness {}&quot;, witness.toCompactString());</span>
+<span class="fc" id="L150">                        } else {</span>
+                            // could not validate bug
+<span class="fc" id="L152">                            Trace&lt;I,O&gt; counterexample = witnessFinder.findCounterexample(sut, mapping, sutBugLanguage, bugPattern.generateBugLanguage());</span>
+<span class="fc" id="L153">                            Word&lt;O&gt; mealyOutput = mealy.computeOutput(counterexample.getInputWord());</span>
+<span class="fc" id="L154">                            Trace&lt;I,O&gt; falseAlarm = new Trace&lt;&gt; (counterexample.getInputWord(), mealyOutput);</span>
+<span class="fc" id="L155">                            StateMachineBug&lt;I,O&gt; bug = new StateMachineBug&lt;&gt;(falseAlarm, bugPattern);</span>
+<span class="fc" id="L156">                            bug.validationFailed(counterexample);</span>
+<span class="fc" id="L157">                            bugs.add(bug);</span>
+<span class="fc" id="L158">                            LOGGER.info(&quot;Could not find valid witness, giving counterexample {}&quot;, counterexample.toCompactString());</span>
+                        }
+<span class="nc" id="L160">                    } catch(TimeoutException e) {</span>
+<span class="nc" id="L161">                        tracker.timeout();</span>
+<span class="nc" id="L162">                        break;</span>
+<span class="fc" id="L163">                    }</span>
+                } else {
+<span class="fc" id="L165">                    Word&lt;Symbol&gt; acceptingSequence = sutBugLanguage.getShortestAcceptingSequence();</span>
+<span class="fc" id="L166">                    Trace&lt;I,O&gt; trace = mapping.toExecutionTrace(acceptingSequence);</span>
+<span class="fc" id="L167">                    StateMachineBug&lt;I,O&gt; bug = new StateMachineBug&lt;&gt;(trace, bugPattern);</span>
+<span class="fc" id="L168">                    bugs.add(bug);</span>
+<span class="fc" id="L169">                    LOGGER.info(&quot;Found witness {}&quot;, trace.toCompactString());</span>
+                }
+            }
+<span class="fc" id="L172">        }</span>
+
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        for (GeneralBugPattern bugPattern :  patterns.getGeneralBugPatterns()) {</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">            if (DebugMode.EVALUATE_SPECIFIC_BUG_PATTERNS.isEnabled(config)) {</span>
+<span class="nc" id="L176">                evaluateSpecificBugPatterns(bugPattern, sutLanguage, detectedPatterns, mapping, sut);</span>
+            } else {
+<span class="fc" id="L178">                handleGeneralBugPattern(bugPattern, sutLanguage, detectedPatterns, mapping, bugs);</span>
+            }
+<span class="fc" id="L180">        }</span>
+
+<span class="fc" id="L182">        DFAAdapter spec = patterns.getSpecificationLanguage();</span>
+<span class="pc bpc" id="L183" title="1 of 2 branches missed.">        if (spec != null) {</span>
+            // check for the existence of unidentified specification bugs
+<span class="nc" id="L185">            handleUncategorizedSpecificationBugs(spec, sutLanguage, detectedPatterns, mealy, mapping, bugs);</span>
+        }
+<span class="fc" id="L187">        tracker.finishStateMachineBugFinding(bugs);</span>
+<span class="fc" id="L188">        return new BugFinderResult&lt;&gt;(patterns, bugs, tracker.generateStatistics());</span>
+    }
+
+    private void handleGeneralBugPattern(GeneralBugPattern generalBugPattern, DFAAdapter sutLanguage, Collection&lt;BugPattern&gt; specificBugPatterns, SymbolMapping&lt;I,O&gt; mapping, List&lt;StateMachineBug&lt;I,O&gt;&gt; bugs) {
+<span class="fc" id="L192">        LOGGER.info(&quot;Checking bug pattern {}&quot;, generalBugPattern.getShortenedName());</span>
+<span class="fc" id="L193">        DFAAdapter bugLanguage = generalBugPattern.generateBugLanguage().minimize();</span>
+<span class="fc" id="L194">        exporter.exportDfa(bugLanguage, generalBugPattern.getShortenedName() + &quot;Language.dot&quot;);</span>
+<span class="fc" id="L195">        DFAAdapter sutBugLanguage = sutLanguage.intersect(bugLanguage).minimize();</span>
+<span class="fc" id="L196">        exporter.exportDfa(sutBugLanguage, &quot;sut&quot; + generalBugPattern.getShortenedName() + &quot;Language.dot&quot;);</span>
+<span class="fc" id="L197">        Set&lt;BugPattern&gt; categorizingBps = new LinkedHashSet&lt;&gt;();</span>
+
+<span class="fc" id="L199">        SearchConfig search = config.getSearchConfig();</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">        List&lt;BugPattern&gt; specializedBugPatterns = specificBugPatterns.stream().filter(sbp -&gt; !sutBugLanguage.intersect(sbp.generateBugLanguage()).isEmpty()).collect(Collectors.toList());</span>
+
+<span class="fc" id="L202">        int uncategorizedSequences = 0, generatedSequences = 0;</span>
+
+<span class="fc bfc" id="L204" title="All 2 branches covered.">        for (Word&lt;Symbol&gt; sequence : wordsToAcceptingStates(sutBugLanguage.getDfa(), sutBugLanguage.getSymbols(), search)) {</span>
+<span class="fc" id="L205">            generatedSequences ++;</span>
+<span class="fc" id="L206">            List&lt;BugPattern&gt; capturingBps = specializedBugPatterns.stream().filter(bp -&gt; bp.generateBugLanguage().accepts(sequence)).collect(Collectors.toList());</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">            if (capturingBps.isEmpty()) {</span>
+<span class="fc" id="L208">                uncategorizedSequences ++;</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">                if (uncategorizedSequences &gt;= generalBugPattern.uncategorizedSequenceBound()) {</span>
+<span class="nc" id="L210">                    break;</span>
+                }
+<span class="fc" id="L212">                Trace&lt;I,O&gt; trace = mapping.toExecutionTrace(sequence);</span>
+<span class="fc" id="L213">                StateMachineBug&lt;I,O&gt; bug = new StateMachineBug&lt;&gt;(trace, generalBugPattern);</span>
+<span class="fc" id="L214">                bugs.add(bug);</span>
+<span class="fc" id="L215">            } else {</span>
+<span class="fc" id="L216">                categorizingBps.addAll(capturingBps);</span>
+            }
+
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">            if (generatedSequences &gt; generalBugPattern.generatedSequenceBound()) {</span>
+<span class="nc" id="L220">                break;</span>
+            }
+
+<span class="fc" id="L223">        }</span>
+
+<span class="fc" id="L225">        LOGGER.info(&quot;Sequences generated: {}&quot;, generatedSequences);</span>
+<span class="fc" id="L226">        LOGGER.info(&quot;Uncategorized sequences generated: {}&quot;, uncategorizedSequences);</span>
+<span class="fc" id="L227">        LOGGER.info(&quot;Categorizing bug patterns ({}): {}&quot;, categorizingBps.size(), categorizingBps.toString());</span>
+<span class="fc" id="L228">        tracker.handleGeneralBugPattern(generalBugPattern, generatedSequences, uncategorizedSequences);</span>
+<span class="fc" id="L229">    }</span>
+
+    private void evaluateSpecificBugPatterns(GeneralBugPattern generalBugPattern, DFAAdapter sutLanguage, Collection&lt;BugPattern&gt; specificBugPatterns, SymbolMapping&lt;I,O&gt; mapping, @Nullable SUT&lt;I,O&gt; sut) {
+<span class="nc" id="L232">        LOGGER.info(&quot;Using the general bug pattern {} to evaluate (the benefit of) the specific bug patterns&quot;, generalBugPattern.getShortenedName());</span>
+<span class="nc" id="L233">        DFAAdapter bugLanguage = generalBugPattern.generateBugLanguage().minimize();</span>
+<span class="nc" id="L234">        exporter.exportDfa(bugLanguage, generalBugPattern.getShortenedName() + &quot;Language.dot&quot;);</span>
+<span class="nc" id="L235">        DFAAdapter sutBugLanguage = sutLanguage.intersect(bugLanguage).minimize();</span>
+<span class="nc" id="L236">        exporter.exportDfa(sutBugLanguage, &quot;sut&quot; + generalBugPattern.getShortenedName() + &quot;Language.dot&quot;);</span>
+
+<span class="nc" id="L238">        Set&lt;BugPattern&gt; categorizingBps = new LinkedHashSet&lt;&gt;();</span>
+<span class="nc" id="L239">        Set&lt;BugPattern&gt; validatedCategorizingBps = new LinkedHashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">        List&lt;BugPattern&gt; specificBps = specificBugPatterns.stream().filter(sbp -&gt; !sutBugLanguage.intersect(sbp.generateBugLanguage()).isEmpty()).collect(Collectors.toList());</span>
+<span class="nc" id="L241">        Duration duration = config.getDebugTimeLimit();</span>
+
+<span class="nc" id="L243">        SearchConfig search = config.getSearchConfig();</span>
+<span class="nc" id="L244">        long startTime = System.currentTimeMillis();</span>
+
+<span class="nc bnc" id="L246" title="All 2 branches missed.">        if (validate) {</span>
+<span class="nc" id="L247">            tracker.startValidation(generalBugPattern);</span>
+        }
+
+<span class="nc" id="L250">        int uncategorizedSequences = 0, generatedSequences = 0, validatedSequences = 0, validatedUncategorizedSequences = 0;</span>
+
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        for (Word&lt;Symbol&gt; sequence : wordsToAcceptingStates(sutBugLanguage.getDfa(), sutBugLanguage.getSymbols(), search)) {</span>
+<span class="nc" id="L253">            generatedSequences ++;</span>
+<span class="nc" id="L254">            List&lt;BugPattern&gt; capturingBps = specificBps.stream().filter(bp -&gt; bp.generateBugLanguage().accepts(sequence)).collect(Collectors.toList());</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">            if (capturingBps.isEmpty()) {</span>
+<span class="nc" id="L256">                uncategorizedSequences ++;</span>
+            }
+<span class="nc" id="L258">            categorizingBps.addAll(capturingBps);</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">            if (validate) {</span>
+                try {
+<span class="nc" id="L261">                    Trace&lt;I,O&gt; trace = mapping.toExecutionTrace(sequence);</span>
+<span class="nc" id="L262">                    Word&lt;O&gt; outputWord = sut.execute(trace.getInputWord());</span>
+<span class="nc" id="L263">                    Trace&lt;I,O&gt; actualTrace = new Trace&lt;&gt; (trace.getInputWord(), outputWord);</span>
+<span class="nc" id="L264">                    Word&lt;Symbol&gt; actualSequence= mapping.fromExecutionTrace(actualTrace);</span>
+<span class="nc" id="L265">                    boolean exhibitsBug = bugLanguage.accepts(actualSequence);</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">                    if (exhibitsBug) {</span>
+<span class="nc" id="L267">                        capturingBps.forEach(bp -&gt; tracker.validated(bp));</span>
+<span class="nc" id="L268">                        validatedCategorizingBps.addAll(capturingBps);</span>
+<span class="nc" id="L269">                        validatedSequences ++;</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">                        if (capturingBps.isEmpty()) {</span>
+<span class="nc" id="L271">                            validatedUncategorizedSequences ++;</span>
+                        }
+<span class="nc bnc" id="L273" title="All 2 branches missed.">                        if (validatedCategorizingBps.size() == specificBps.size()) {</span>
+<span class="nc" id="L274">                            break;</span>
+                        }
+                    }
+<span class="nc" id="L277">                } catch(TimeoutException e) {</span>
+<span class="nc" id="L278">                    tracker.timeout();</span>
+<span class="nc" id="L279">                    break;</span>
+<span class="nc" id="L280">                }</span>
+            } else {
+<span class="nc bnc" id="L282" title="All 2 branches missed.">                if (categorizingBps.size() == specificBps.size()) {</span>
+<span class="nc" id="L283">                    break;</span>
+                }
+            }
+
+<span class="nc bnc" id="L287" title="All 2 branches missed.">            if (generatedSequences &gt; config.getDebugWitnessBound()) {</span>
+<span class="nc" id="L288">                break;</span>
+            }
+
+<span class="nc bnc" id="L291" title="All 2 branches missed.">            if (System.currentTimeMillis() - startTime &gt; duration.toMillis()) {</span>
+<span class="nc" id="L292">                break;</span>
+            }
+<span class="nc" id="L294">        }</span>
+
+<span class="nc" id="L296">        LOGGER.info(&quot;Sequences generated: {}&quot;, generatedSequences);</span>
+<span class="nc" id="L297">        LOGGER.info(&quot;Uncategorized sequences generated: {}&quot;, uncategorizedSequences);</span>
+<span class="nc" id="L298">        LOGGER.info(&quot;Specific bug patterns ({}): {}&quot;, specificBps.size(), specificBps.toString());</span>
+<span class="nc" id="L299">        LOGGER.info(&quot;Categorizing bug patterns ({}): {}&quot;, categorizingBps.size(), categorizingBps.toString());</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">        if (categorizingBps.size() != specificBps.size()) {</span>
+<span class="nc" id="L301">            Set&lt;BugPattern&gt; specializedBpsNotCovered = new LinkedHashSet&lt;&gt;(specificBps);</span>
+<span class="nc" id="L302">            specializedBpsNotCovered.removeAll(categorizingBps);</span>
+<span class="nc" id="L303">            LOGGER.info(&quot;Specialized bug patterns that were not covered by sequence generation ({}): {}&quot;, specializedBpsNotCovered.size(), specializedBpsNotCovered.toString());</span>
+<span class="nc" id="L304">        } else {</span>
+<span class="nc" id="L305">            LOGGER.info(&quot;All specialized bug patterns have been covered by sequence generation&quot;);</span>
+        }
+
+<span class="nc bnc" id="L308" title="All 2 branches missed.">        if (validate) {</span>
+<span class="nc" id="L309">            validatedCategorizingBps.forEach(bp -&gt; tracker.validated(bp));</span>
+<span class="nc" id="L310">            LOGGER.info(&quot;Validated sequences: {}&quot;, validatedSequences);</span>
+<span class="nc" id="L311">            LOGGER.info(&quot;Validated uncategorized sequences: {}&quot;, validatedUncategorizedSequences);</span>
+<span class="nc" id="L312">            LOGGER.info(&quot;Validated categorizing bug patterns ({}): {}&quot;, validatedCategorizingBps.size(), validatedCategorizingBps.toString());</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">            if (validatedCategorizingBps.size() != specificBps.size()) {</span>
+<span class="nc" id="L314">                Set&lt;BugPattern&gt; specializedBpsNotCovered = new LinkedHashSet&lt;&gt;(specificBps);</span>
+<span class="nc" id="L315">                specializedBpsNotCovered.removeAll(validatedCategorizingBps);</span>
+<span class="nc" id="L316">                LOGGER.info(&quot;Specialized bug patterns that were not validated({}): {}&quot;, specializedBpsNotCovered.size(), specializedBpsNotCovered.toString());</span>
+<span class="nc" id="L317">            } else {</span>
+<span class="nc" id="L318">                LOGGER.info(&quot;All specialized bug patterns have been validated&quot;);</span>
+            }
+<span class="nc" id="L320">            tracker.endValidation(generalBugPattern);</span>
+<span class="nc" id="L321">            tracker.handleValidatedGeneralBugPattern(generalBugPattern, validatedSequences, validatedUncategorizedSequences);</span>
+        }
+<span class="nc" id="L323">        tracker.handleGeneralBugPattern(generalBugPattern, generatedSequences, uncategorizedSequences);</span>
+<span class="nc" id="L324">    }</span>
+
+    private void handleUncategorizedSpecificationBugs(DFAAdapter specLanguage, DFAAdapter sutLanguage, Collection&lt;BugPattern&gt; bugPatterns,
+            MealyMachine&lt;?,I, ?, O&gt; mealy, SymbolMapping&lt;I,O&gt; mapping, List&lt;StateMachineBug&lt;I,O&gt;&gt; bugs) {
+<span class="nc" id="L328">        exporter.exportDfa(specLanguage, &quot;specificationLanguage.dot&quot;);</span>
+<span class="nc" id="L329">        LOGGER.info(&quot;Generating specification-violating sequences and checking there are bug patterns capturing them&quot;);</span>
+<span class="nc" id="L330">        DFAAdapter specBugLanguage = specLanguage.complement().minimize();</span>
+<span class="nc" id="L331">        exporter.exportDfa(specBugLanguage, &quot;specificationBugLanguage.dot&quot;);</span>
+<span class="nc" id="L332">        DFAAdapter sutSpecBugLanguage = sutLanguage.intersect(specBugLanguage).minimize();</span>
+<span class="nc" id="L333">        exporter.exportDfa(sutSpecBugLanguage, &quot;sutSpecificationBugLanguage.dot&quot;);</span>
+
+<span class="nc" id="L335">        Set&lt;Object&gt; deviantTransitions = new LinkedHashSet&lt;&gt;();</span>
+<span class="nc" id="L336">        Set&lt;String&gt; categorizingBp = new LinkedHashSet&lt;&gt;();</span>
+<span class="nc" id="L337">        SearchConfig search = new SearchConfig();</span>
+<span class="nc" id="L338">        search.setOrder(SearchOrder.INSERTION);</span>
+<span class="nc" id="L339">        search.setStateVisitBound(1);</span>
+<span class="nc" id="L340">        search.setVisitTargetStates(false);</span>
+<span class="nc" id="L341">        int uncategorizedFlows = 0, allFlows = 0, deviantTransitionSkips = 0;</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">        for (Word&lt;Symbol&gt; sequence : wordsToAcceptingStates(sutSpecBugLanguage.getDfa(), sutSpecBugLanguage.getSymbols(), search)) {</span>
+<span class="nc" id="L343">            allFlows ++;</span>
+<span class="nc" id="L344">            List&lt;AbstractBugPattern&gt; capturingBps = bugPatterns.stream().filter(bp -&gt; bp.generateBugLanguage().accepts(sequence)).collect(Collectors.toList());</span>
+<span class="nc" id="L345">            capturingBps.forEach(bp -&gt; categorizingBp.add(bp.getName()));</span>
+<span class="nc" id="L346">            Object deviantTransition = getDeviantTransition(sequence, specBugLanguage, mealy, mapping);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">            if (deviantTransition != null) {</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">                if (deviantTransitions.contains(deviantTransition)) {</span>
+<span class="nc" id="L349">                    deviantTransitionSkips ++;</span>
+<span class="nc" id="L350">                    continue;</span>
+                }
+<span class="nc" id="L352">                deviantTransitions.add(deviantTransition);</span>
+            }
+<span class="nc bnc" id="L354" title="All 2 branches missed.">            if (capturingBps.isEmpty()) {</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">                if (specLanguage.accepts(sequence)) {</span>
+<span class="nc" id="L356">                    throw new InternalError(&quot;Accepting sequence in uncategorized bug language accepted by specification&quot;);</span>
+                }
+
+<span class="nc" id="L359">                Trace&lt;I,O&gt; trace = mapping.toExecutionTrace(sequence);</span>
+<span class="nc" id="L360">                StateMachineBug&lt;I,O&gt; bug = new StateMachineBug&lt;&gt;(trace, UncategorizedBugPattern.getInstance());</span>
+<span class="nc" id="L361">                bugs.add(bug);</span>
+<span class="nc" id="L362">                uncategorizedFlows ++;</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">                if (uncategorizedFlows &gt;= config.getUncategorizedBugBound()) {</span>
+<span class="nc" id="L364">                    break;</span>
+                }
+            }
+<span class="nc bnc" id="L367" title="All 2 branches missed.">            if (allFlows &gt; config.getNonConformingSequenceBound()) {</span>
+<span class="nc" id="L368">                break;</span>
+            }
+<span class="nc" id="L370">        }</span>
+
+<span class="nc" id="L372">        LOGGER.info(&quot;Non-conforming sequences generated: {}&quot;, allFlows);</span>
+<span class="nc" id="L373">        LOGGER.info(&quot;Uncategorized sequences generated: {}&quot;, uncategorizedFlows);</span>
+<span class="nc" id="L374">        LOGGER.info(&quot;Deviant transition skips: {}&quot;, deviantTransitionSkips);</span>
+<span class="nc" id="L375">        LOGGER.info(&quot;Categorizing bug patterns ({}): {}&quot;, categorizingBp.size(), categorizingBp.toString());</span>
+<span class="nc" id="L376">    }</span>
+
+    private &lt;S&gt;  Iterable&lt;Word&lt;Symbol&gt;&gt; wordsToAcceptingStates(DFA&lt;S, Symbol&gt; dfa, Collection&lt;Symbol&gt; symbols, SearchConfig search) {
+<span class="fc" id="L379">        ModelExplorer&lt;S, Symbol&gt; explorer = new ModelExplorer&lt;&gt;(dfa, symbols);</span>
+<span class="fc" id="L380">        List&lt;S&gt; acceptingStates = dfa.getStates().stream().filter(s -&gt; dfa.isAccepting(s)).collect(Collectors.toList());</span>
+<span class="fc" id="L381">        return explorer.wordsToTargetStates(acceptingStates, search);</span>
+    }
+
+    private &lt;MS&gt; Object getDeviantTransition(Word&lt;Symbol&gt; sequence, DFAAdapter spec, MealyMachine&lt;MS,I,?,O&gt; mealy,  SymbolMapping&lt;I,O&gt; mapping) {
+<span class="nc bnc" id="L385" title="All 2 branches missed.">        assert !spec.accepts(sequence);</span>
+<span class="nc" id="L386">        Set&lt;Symbol&gt; suffixSymbols = new LinkedHashSet&lt;&gt;();</span>
+<span class="nc" id="L387">        Word&lt;Symbol&gt; acceptedPrefix = null;</span>
+<span class="nc" id="L388">        Symbol deviatingSymbol = null;</span>
+
+<span class="nc bnc" id="L390" title="All 2 branches missed.">        for (int i=1; i&lt;=sequence.length(); i++) {</span>
+<span class="nc" id="L391">            Word&lt;Symbol&gt; prefix = sequence.prefix(sequence.length() - i);</span>
+<span class="nc" id="L392">            suffixSymbols.add(sequence.getSymbol(sequence.length() - i));</span>
+<span class="nc bnc" id="L393" title="All 2 branches missed.">            if (spec.accepts(prefix)) {</span>
+<span class="nc" id="L394">                Set&lt;Symbol&gt; allowedSymbols = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L395">                allowedSymbols(spec.getDfa(), prefix, suffixSymbols, allowedSymbols);</span>
+<span class="nc bnc" id="L396" title="All 2 branches missed.">                if (allowedSymbols.containsAll(suffixSymbols)) {</span>
+<span class="nc" id="L397">                    acceptedPrefix = prefix;</span>
+<span class="nc" id="L398">                    deviatingSymbol = sequence.getSymbol(sequence.length() - i);</span>
+<span class="nc" id="L399">                    break;</span>
+                }
+            }
+        }
+
+<span class="nc bnc" id="L404" title="All 2 branches missed.">        if (deviatingSymbol != null) {</span>
+<span class="nc" id="L405">            Word&lt;Symbol&gt; deviatingSequence = acceptedPrefix.append(deviatingSymbol);</span>
+<span class="nc" id="L406">            Trace&lt;I, O&gt; trace = mapping.toExecutionTrace(deviatingSequence);</span>
+<span class="nc" id="L407">            Word&lt;I&gt; inputWord = trace.getInputWord();</span>
+<span class="nc" id="L408">            return mealy.getTransition(mealy.getState(inputWord.prefix(-1)), inputWord.lastSymbol());</span>
+        }
+<span class="nc" id="L410">        return null;</span>
+    }
+
+    private &lt;S&gt; void allowedSymbols(DFA&lt;S, Symbol&gt; specDfa, Word&lt;Symbol&gt; fromPrefix, Collection&lt;Symbol&gt; usedSymbols,  Collection&lt;Symbol&gt; allowedSymbols) {
+<span class="nc" id="L414">        S state = specDfa.getState(fromPrefix);</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">        if (specDfa.isAccepting(state)) {</span>
+<span class="nc" id="L416">            Set&lt;S&gt; visited = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L417">            Deque&lt;S&gt; toVisit = new ArrayDeque&lt;&gt;();</span>
+<span class="nc" id="L418">            toVisit.add(state);</span>
+<span class="nc bnc" id="L419" title="All 2 branches missed.">            while (!toVisit.isEmpty()) {</span>
+<span class="nc" id="L420">                S visiting = toVisit.pop();</span>
+<span class="nc" id="L421">                visited.add(visiting);</span>
+<span class="nc bnc" id="L422" title="All 2 branches missed.">                for (Symbol symbol : usedSymbols) {</span>
+<span class="nc" id="L423">                    S nextState = specDfa.getTransition(visiting, symbol);</span>
+<span class="nc bnc" id="L424" title="All 4 branches missed.">                    if (nextState != null &amp;&amp; specDfa.isAccepting(nextState) ) {</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">                        if (!visited.contains(nextState)) {</span>
+<span class="nc" id="L426">                            toVisit.add(nextState);</span>
+                        }
+
+<span class="nc" id="L429">                        allowedSymbols.add(symbol);</span>
+                    }
+<span class="nc" id="L431">                }</span>
+<span class="nc" id="L432">            }</span>
+        }
+<span class="nc" id="L434">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

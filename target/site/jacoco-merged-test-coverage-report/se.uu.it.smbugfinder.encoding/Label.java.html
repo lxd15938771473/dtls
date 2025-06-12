@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Label.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.encoding</a> &gt; <span class="el_source">Label.java</span></div><h1>Label.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.encoding;
+
+public class Label {
+    private DescriptionToken description;
+    private Update update;
+    private Guard guard;
+
+<span class="nc" id="L8">    public Label(DescriptionToken description) {</span>
+<span class="nc" id="L9">        guard = new Guard();</span>
+<span class="nc" id="L10">        update = new Update();</span>
+<span class="nc" id="L11">        this.description = description;</span>
+<span class="nc" id="L12">    }</span>
+
+<span class="fc" id="L14">    public Label(DescriptionToken description, Guard guard, Update update) {</span>
+<span class="fc" id="L15">        this.guard = guard;</span>
+<span class="fc" id="L16">        this.update = update;</span>
+<span class="fc" id="L17">        this.description = description;</span>
+<span class="fc" id="L18">    }</span>
+
+    public DescriptionToken getDescription() {
+<span class="fc" id="L21">        return description;</span>
+    }
+
+    public Update getUpdate() {
+<span class="fc" id="L25">        return update;</span>
+    }
+    public Guard getGuard() {
+<span class="fc" id="L28">        return guard;</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L33">        final int prime = 31;</span>
+<span class="fc" id="L34">        int result = 1;</span>
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">        result = prime * result + ((description == null) ? 0 : description.hashCode());</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        result = prime * result + ((guard == null) ? 0 : guard.hashCode());</span>
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        result = prime * result + ((update == null) ? 0 : update.hashCode());</span>
+<span class="fc" id="L38">        return result;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        if (this == obj)</span>
+<span class="fc" id="L44">            return true;</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">        if (obj == null)</span>
+<span class="nc" id="L46">            return false;</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        if (! (obj instanceof Label other))</span>
+<span class="nc" id="L48">            return false;</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        if (description == null) {</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">            if (other.description != null)</span>
+<span class="nc" id="L51">                return false;</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">        } else if (!description.equals(other.description))</span>
+<span class="fc" id="L53">            return false;</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (guard == null) {</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">            if (other.guard != null)</span>
+<span class="nc" id="L56">                return false;</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        } else if (!guard.equals(other.guard))</span>
+<span class="nc" id="L58">            return false;</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        if (update == null) {</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">            if (other.update != null)</span>
+<span class="nc" id="L61">                return false;</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        } else if (!update.equals(other.update))</span>
+<span class="nc" id="L63">            return false;</span>
+<span class="nc" id="L64">        return true;</span>
+    }
+
+
+    @Override
+    public String toString() {
+<span class="fc" id="L70">        StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L71">        builder.append(description.toString());</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (update.getAssignments().length &gt; 0) {</span>
+<span class="nc" id="L73">            builder.append(&quot;[&quot;)</span>
+<span class="nc" id="L74">            .append(update.toString());</span>
+<span class="nc" id="L75">            builder.append(&quot;]&quot;);</span>
+        }
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (!guard.equals(new Guard())) {</span>
+<span class="nc" id="L78">            builder.append(&quot; where &quot;)</span>
+<span class="nc" id="L79">            .append(guard.toString());</span>
+        }
+
+<span class="fc" id="L82">        return builder.toString();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.witness</a> &gt; <span class="el_source">SearchConfig.java</span></div><h1>SearchConfig.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.witness;
+
+import com.beust.jcommander.Parameter;
+
+<span class="fc" id="L5">public class SearchConfig {</span>
+<span class="fc" id="L6">    @Parameter(names = {&quot;-svb&quot;, &quot;-stateVisitBound&quot;}, required=false, description = &quot;Bound on the number of times a state can be visited.&quot;)</span>
+    private int stateVisitBound = 1;
+<span class="fc" id="L8">    @Parameter(names = {&quot;-so&quot;, &quot;-searchOrder&quot;}, required=false, description = &quot;The order in which states are visited during a search.&quot;)</span>
+    private SearchOrder order = SearchOrder.MIN_VISIT_MIN_STATE;
+<span class="fc" id="L10">    private boolean visitTargetStates = false;</span>
+<span class="fc" id="L11">    @Parameter(names = {&quot;-qb&quot;, &quot;-queueBound&quot;}, required=false, description = &quot;The maximum size of the queue.&quot;)</span>
+    private int queueBound = 100000;
+
+    public void setStateVisitBound(int stateVisitBound) {
+<span class="nc" id="L15">        this.stateVisitBound = stateVisitBound;</span>
+<span class="nc" id="L16">    }</span>
+
+    public int getStateVisitBound() {
+<span class="fc" id="L19">        return stateVisitBound;</span>
+    }
+
+    public void setOrder(SearchOrder order) {
+<span class="nc" id="L23">        this.order = order;</span>
+<span class="nc" id="L24">    }</span>
+
+    public SearchOrder getOrder() {
+<span class="fc" id="L27">        return order;</span>
+    }
+
+    public void setVisitTargetStates(boolean visitTargetStates) {
+<span class="nc" id="L31">        this.visitTargetStates = visitTargetStates;</span>
+<span class="nc" id="L32">    }</span>
+
+    public boolean isVisitTargetStates() {
+<span class="fc" id="L35">        return visitTargetStates;</span>
+    }
+
+    public int getQueueBound() {
+<span class="fc" id="L39">        return queueBound;</span>
+    }
+
+    public void setQueueBound(int queueBound) {
+<span class="nc" id="L43">        this.queueBound = queueBound;</span>
+<span class="nc" id="L44">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

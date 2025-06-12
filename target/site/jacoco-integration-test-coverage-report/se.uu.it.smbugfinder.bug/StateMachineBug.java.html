@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StateMachineBug.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.bug</a> &gt; <span class="el_source">StateMachineBug.java</span></div><h1>StateMachineBug.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.bug;
+
+import se.uu.it.smbugfinder.dfa.Trace;
+import se.uu.it.smbugfinder.pattern.AbstractBugPattern;
+
+public final class StateMachineBug&lt;I, O&gt; extends Bug&lt;I, O&gt; {
+
+    private AbstractBugPattern bugPattern;
+    private Trace&lt;I, O&gt; counterexample;
+
+    public StateMachineBug(Trace&lt;I, O&gt; trace, AbstractBugPattern bugPattern) {
+<span class="fc" id="L12">        super(trace);</span>
+<span class="pc bpc" id="L13" title="1 of 2 branches missed.">        if (trace == null) {</span>
+<span class="nc" id="L14">            throw new InternalError(&quot;Trace cannot be null&quot;);</span>
+        }
+<span class="fc" id="L16">        this.bugPattern = bugPattern;</span>
+<span class="fc" id="L17">        setSeverity(bugPattern.getSeverity());</span>
+<span class="fc" id="L18">        initialize();</span>
+<span class="fc" id="L19">    }</span>
+
+    public AbstractBugPattern getBugPattern() {
+<span class="fc" id="L22">        return bugPattern;</span>
+    }
+
+    @Override
+    public String getDescription() {
+<span class="fc" id="L27">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L28">        sb.append(&quot;Bug Pattern: &quot;).append(bugPattern.getName())</span>
+<span class="fc" id="L29">            .append(System.lineSeparator())</span>
+<span class="fc" id="L30">            .append(&quot;Severity: &quot;).append(bugPattern.getSeverity())</span>
+<span class="fc" id="L31">            .append(System.lineSeparator())</span>
+<span class="fc" id="L32">            .append(&quot;Description: &quot;).append(bugPattern.getDescription())</span>
+<span class="fc" id="L33">            .append(System.lineSeparator());</span>
+<span class="fc" id="L34">        sb.append(getTrace().toCompactString())</span>
+<span class="fc" id="L35">        .append(System.lineSeparator())</span>
+<span class="fc" id="L36">        .append(&quot;Inputs: &quot;).append(getTrace().getInputWord())</span>
+<span class="fc" id="L37">        .append(System.lineSeparator());</span>
+<span class="fc" id="L38">        sb.append(&quot;Validation Status: &quot;)</span>
+<span class="fc" id="L39">        .append(getStatus()).append(System.lineSeparator());</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (getStatus() == BugValidationStatus.VALIDATION_FAILED) {</span>
+<span class="nc" id="L41">            sb.append(&quot;Counterexample: &quot;).append(counterexample.toCompactString());</span>
+<span class="nc" id="L42">            sb.append(System.lineSeparator());</span>
+        }
+<span class="fc" id="L44">        return sb.toString();</span>
+    }
+
+    public void validationFailed(Trace&lt;I,O&gt; counterexample) {
+<span class="nc" id="L48">        setStatus(BugValidationStatus.VALIDATION_FAILED);</span>
+<span class="nc" id="L49">        this.counterexample = counterexample;</span>
+<span class="nc" id="L50">    }</span>
+
+    public void validationSuccessful() {
+<span class="nc" id="L53">        setStatus(BugValidationStatus.VALIDATION_SUCCESSFUL);</span>
+<span class="nc" id="L54">    }</span>
+
+    @Override
+    public BugSeverity getDefaultSeverity() {
+<span class="fc" id="L58">        return BugSeverity.UNKNOWN;</span>
+    }
+
+    @Override
+    public BugValidationStatus getDefaultStatus() {
+<span class="fc" id="L63">        return BugValidationStatus.NOT_VALIDATED;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

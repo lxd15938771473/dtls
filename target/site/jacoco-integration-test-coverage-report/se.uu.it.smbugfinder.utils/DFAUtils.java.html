@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DFAUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.utils</a> &gt; <span class="el_source">DFAUtils.java</span></div><h1>DFAUtils.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.utils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.automatalib.alphabet.impl.ListAlphabet;
+import net.automatalib.automaton.fsa.DFA;
+import net.automatalib.automaton.fsa.MutableDFA;
+import net.automatalib.automaton.fsa.impl.FastDFA;
+import net.automatalib.automaton.fsa.impl.FastDFAState;
+import net.automatalib.automaton.transducer.MealyMachine;
+import net.automatalib.common.util.Pair;
+import net.automatalib.common.util.mapping.Mapping;
+import net.automatalib.util.automaton.Automata;
+import net.automatalib.util.automaton.equivalence.DeterministicEquivalenceTest;
+import net.automatalib.util.automaton.fsa.DFAs;
+import net.automatalib.util.automaton.fsa.MutableDFAs;
+import net.automatalib.word.Word;
+
+<span class="nc" id="L25">public class DFAUtils extends AutomatonUtils {</span>
+
+    /**
+     * Converts a deterministic Mealy machine to an equivalent DFA.
+     * Inputs/outputs are mapped to corresponding symbols given the provided input and output mappings.
+     * An output can be mapped to zero, one or several symbols (which will be chained one after the other in the model).
+     * The end result is an input-complete DFA which is not minimized to preserve resemblance with the original model.
+     * Minimization can be achieved via minimize methods in {@link Automata}.
+     */
+    public static &lt;MI, MS, MO, DI, DS, DA extends MutableDFA&lt;DS, DI&gt;&gt; DA convertMealyToDFA(MealyMachine&lt;MS, MI, ?, MO&gt; mealy, Collection&lt;MI&gt; inputs,
+            Collection&lt;DI&gt; symbols,
+            Mapping&lt;MI,DI&gt; inputMapping,
+            Mapping&lt;Pair&lt;MS,MO&gt;,List&lt;DI&gt;&gt; outputMapping,
+            Map&lt;MS,DS&gt; stateMapping,
+            DA dfa) {
+<span class="fc" id="L40">        MS mealyState = mealy.getInitialState();</span>
+<span class="fc" id="L41">        Map&lt;MS, DS&gt; inputStateMapping = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L42">        DS dfaState = dfa.addInitialState(true);</span>
+<span class="fc" id="L43">        inputStateMapping.put(mealyState, dfaState);</span>
+<span class="fc" id="L44">        inputStateMapping.put(mealyState, dfaState);</span>
+<span class="fc" id="L45">        Set&lt;MS&gt; visited = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L46">        convertMealyToDFA(mealyState, dfaState, mealy, inputs, inputMapping, outputMapping, inputStateMapping, visited, dfa);</span>
+<span class="fc" id="L47">        MutableDFAs.complete(dfa, symbols, false, false);</span>
+<span class="fc" id="L48">        stateMapping.putAll(inputStateMapping);</span>
+<span class="fc" id="L49">        return dfa;</span>
+    }
+
+    private static &lt;MI, MS, MO, DI, DS, DA extends MutableDFA&lt;DS, DI&gt;&gt; void convertMealyToDFA(MS mealyState, DS dfaState, MealyMachine&lt;MS, MI, ?, MO&gt; mealy,
+            Collection&lt;MI&gt; inputs, Mapping&lt;MI, DI&gt; inputMapping, Mapping&lt;Pair&lt;MS,MO&gt;, List&lt;DI&gt;&gt; outputMapping, Map&lt;MS, DS&gt; inputStateMapping,
+            Set&lt;MS&gt; visited, DA dfa) {
+<span class="fc" id="L55">        inputStateMapping.put(mealyState, dfaState);</span>
+<span class="fc" id="L56">        DS inputState = dfaState;</span>
+<span class="fc" id="L57">        visited.add(mealyState);</span>
+        DS nextInputState;
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        for (MI input : inputs) {</span>
+<span class="fc" id="L60">            DI inputSymbol = inputMapping.get(input);</span>
+<span class="fc" id="L61">            MO output = mealy.getOutput(mealyState, input);</span>
+<span class="fc" id="L62">            MS nextMealyState = mealy.getSuccessor(mealyState, input);</span>
+
+<span class="fc" id="L64">            nextInputState = inputStateMapping.get(nextMealyState);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            if (nextInputState == null) {</span>
+<span class="fc" id="L66">                nextInputState = dfa.addState(true);</span>
+<span class="fc" id="L67">                inputStateMapping.put(nextMealyState, nextInputState);</span>
+            }
+
+<span class="fc" id="L70">            Collection&lt;DI&gt; outputSymbols = outputMapping.get(Pair.of(mealyState, output));</span>
+<span class="fc" id="L71">            List&lt;DI&gt; symbols = new ArrayList&lt;&gt;(outputSymbols.size()+1);</span>
+<span class="fc" id="L72">            symbols.add(inputSymbol);</span>
+<span class="fc" id="L73">            symbols.addAll(outputSymbols);</span>
+
+<span class="fc" id="L75">            DS lastState = inputState, nextState;</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">            for (int i = 0; i &lt; symbols.size()-1; i++) {</span>
+<span class="fc" id="L77">                DI ioSymbol = symbols.get(i);</span>
+<span class="fc" id="L78">                nextState = dfa.addState(true);</span>
+<span class="fc" id="L79">                dfa.addTransition(lastState, ioSymbol, nextState);</span>
+<span class="fc" id="L80">                lastState = nextState;</span>
+            }
+
+<span class="fc" id="L83">            dfa.addTransition(lastState, symbols.get(symbols.size()-1), nextInputState);</span>
+
+<span class="fc bfc" id="L85" title="All 2 branches covered.">            if (!visited.contains(nextMealyState)) {</span>
+<span class="fc" id="L86">                convertMealyToDFA(nextMealyState, nextInputState, mealy, inputs, inputMapping, outputMapping, inputStateMapping, visited, dfa);</span>
+            }
+<span class="fc" id="L88">        }</span>
+<span class="fc" id="L89">    }</span>
+
+    public static &lt;I&gt; DFA&lt;?,I&gt; buildRejecting(Collection&lt;I&gt; inputs) {
+<span class="fc" id="L92">        FastDFA&lt;I&gt; rejectingModel = new FastDFA&lt;I&gt;(new ListAlphabet&lt;I&gt;(new ArrayList&lt;&gt;(inputs)));</span>
+<span class="fc" id="L93">        FastDFAState rej = rejectingModel.addInitialState(false);</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        for (I symbol : inputs) {</span>
+<span class="fc" id="L95">            rejectingModel.addTransition(rej, symbol, rej);</span>
+<span class="fc" id="L96">        }</span>
+<span class="fc" id="L97">        return rejectingModel;</span>
+    }
+
+    public static &lt;S,I&gt; boolean hasAcceptingPaths(S state, DFA&lt;S, I&gt; automaton, Collection&lt;I&gt; inputs) {
+<span class="nc" id="L101">        Set&lt;S&gt; reachableStates = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L102">        reachableStates(automaton, inputs, state, reachableStates);</span>
+<span class="nc" id="L103">        return reachableStates.stream().anyMatch(s -&gt; automaton.isAccepting(s));</span>
+    }
+
+    public static &lt;S,I&gt; Word&lt;I&gt; findShortestAcceptingWord(DFA&lt;S, I&gt; automaton, Collection&lt;I&gt; inputs) {
+<span class="fc" id="L107">        Word&lt;I&gt; accepting = DeterministicEquivalenceTest.findSeparatingWord(DFAs.complete(automaton, new ListAlphabet&lt;I&gt;(new ArrayList&lt;&gt;(inputs))), buildRejecting(inputs), inputs);</span>
+<span class="fc" id="L108">        return accepting;</span>
+    }
+
+    public static &lt;S,I&gt; Word&lt;I&gt; findShortestNonAcceptingPrefix(DFA&lt;S, I&gt; automaton, Word&lt;I&gt; word) {
+<span class="nc" id="L112">        int prefixLen = 0;</span>
+<span class="nc" id="L113">        S crtState = automaton.getInitialState();</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        for (I input : word) {</span>
+<span class="nc bnc" id="L115" title="All 4 branches missed.">            if (crtState == null || !automaton.isAccepting(crtState)) {</span>
+<span class="nc" id="L116">                return word.prefix(prefixLen);</span>
+            }
+<span class="nc" id="L118">            prefixLen ++;</span>
+<span class="nc" id="L119">            crtState = automaton.getSuccessor(crtState, input);</span>
+<span class="nc" id="L120">        }</span>
+
+<span class="nc bnc" id="L122" title="All 4 branches missed.">        if (crtState == null || !automaton.isAccepting(crtState)) {</span>
+<span class="nc" id="L123">            return word.prefix(prefixLen);</span>
+        }
+
+<span class="nc" id="L126">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

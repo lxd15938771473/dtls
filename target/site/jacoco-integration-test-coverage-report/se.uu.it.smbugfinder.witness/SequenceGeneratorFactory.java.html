@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SequenceGeneratorFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.witness</a> &gt; <span class="el_source">SequenceGeneratorFactory.java</span></div><h1>SequenceGeneratorFactory.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.witness;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.NotImplementedException;
+
+import net.automatalib.automaton.fsa.DFA;
+import net.automatalib.word.Word;
+import se.uu.it.smbugfinder.utils.DFAUtils;
+
+<span class="nc" id="L17">public class SequenceGeneratorFactory {</span>
+
+    @SuppressWarnings(&quot;StatementSwitchToExpressionSwitch&quot;)
+    public static &lt;I&gt; SequenceGenerator&lt;I&gt; buildGenerator(GenerationStrategy generationStrategy, @Nullable SearchConfig config, @Nullable DFA&lt;?,I&gt; specification) {
+<span class="nc bnc" id="L21" title="All 4 branches missed.">        switch(generationStrategy) {</span>
+        case SHORTEST:
+<span class="nc" id="L23">            return new ShortestSequenceGenerator&lt;I&gt;();</span>
+        case BFS:
+<span class="nc bnc" id="L25" title="All 2 branches missed.">            if (config == null) {</span>
+<span class="nc" id="L26">                throw new InternalError(&quot;Config is needed for BFS Sequence Generator&quot;);</span>
+            }
+<span class="nc" id="L28">            return new BFSSequenceGenerator&lt;I&gt;(config);</span>
+        case DEVIANT:
+<span class="nc bnc" id="L30" title="All 2 branches missed.">            if (specification == null) {</span>
+<span class="nc" id="L31">                throw new InternalError(&quot;Specification is needed for Deviant Transition Sequence Generator&quot;);</span>
+            }
+<span class="nc" id="L33">            return new DeviantTransitionSequenceGenerator&lt;I&gt;(specification);</span>
+        default:
+<span class="nc" id="L35">            throw new NotImplementedException(String.format(&quot;Generation strategy %s is not supported.&quot;, generationStrategy));</span>
+        }
+    }
+
+<span class="nc" id="L39">    static class ShortestSequenceGenerator&lt;I&gt; implements SequenceGenerator&lt;I&gt; {</span>
+
+        @Override
+        public &lt;S&gt; Iterable&lt;Word&lt;I&gt;&gt; generateSequences(DFA&lt;S, I&gt; bugLanguage, Collection&lt;I&gt; alphabet) {
+<span class="nc" id="L43">            Word&lt;I&gt; shortest = DFAUtils.findShortestAcceptingWord(bugLanguage, alphabet);</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">            if (shortest != null) {</span>
+<span class="nc" id="L45">                return Arrays.asList(shortest);</span>
+            } else {
+<span class="nc" id="L47">                return Collections.emptyList();</span>
+            }
+        }
+    }
+
+    static class BFSSequenceGenerator&lt;I&gt; implements SequenceGenerator&lt;I&gt; {
+        private SearchConfig config;
+
+<span class="nc" id="L55">        BFSSequenceGenerator(SearchConfig config) {</span>
+<span class="nc" id="L56">            this.config = config;</span>
+<span class="nc" id="L57">        }</span>
+
+        @Override
+        public &lt;S&gt; Iterable&lt;Word&lt;I&gt;&gt; generateSequences(DFA&lt;S, I&gt; bugLanguage, Collection&lt;I&gt; alphabet) {
+<span class="nc" id="L61">            Set&lt;S&gt; acceptingStates = bugLanguage.getStates().stream().filter(s -&gt; bugLanguage.isAccepting(s)).collect(Collectors.toSet());</span>
+<span class="nc" id="L62">            ModelExplorer&lt;S,I&gt; explorer = new ModelExplorer&lt;&gt;(bugLanguage, alphabet);</span>
+<span class="nc" id="L63">            return explorer.wordsToTargetStates(acceptingStates, config);</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

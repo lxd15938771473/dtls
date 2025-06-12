@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DeviantTransitionSequenceGenerator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.witness</a> &gt; <span class="el_source">DeviantTransitionSequenceGenerator.java</span></div><h1>DeviantTransitionSequenceGenerator.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.witness;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import net.automatalib.alphabet.impl.ListAlphabet;
+import net.automatalib.automaton.fsa.DFA;
+import net.automatalib.automaton.fsa.MutableDFA;
+import net.automatalib.automaton.fsa.impl.FastDFA;
+import net.automatalib.automaton.fsa.impl.FastDFAState;
+import net.automatalib.util.automaton.copy.AutomatonCopyMethod;
+import net.automatalib.util.automaton.copy.AutomatonLowLevelCopy;
+import net.automatalib.word.Word;
+import se.uu.it.smbugfinder.utils.DFAUtils;
+
+public class DeviantTransitionSequenceGenerator &lt;I&gt; implements SequenceGenerator&lt;I&gt; {
+
+    private DFA&lt;?, I&gt; specification;
+
+<span class="nc" id="L22">    public DeviantTransitionSequenceGenerator(DFA&lt;?, I&gt; specification) {</span>
+<span class="nc" id="L23">        this.specification = specification;</span>
+<span class="nc" id="L24">    }</span>
+
+    @Override
+    public &lt;S&gt; Iterable&lt;Word&lt;I&gt;&gt; generateSequences(DFA&lt;S, I&gt; bugLanguage, Collection&lt;I&gt; alphabet) {
+<span class="nc" id="L28">        return new Iterable&lt;Word&lt;I&gt;&gt;() {</span>
+
+            @Override
+            public Iterator&lt;Word&lt;I&gt;&gt; iterator() {
+<span class="nc" id="L32">                return new DeviantTransitionSequenceIterator&lt;I&gt;(bugLanguage, specification, alphabet);</span>
+            }
+        };
+    }
+
+    private static class DeviantTransitionSequenceIterator&lt;I&gt; implements Iterator&lt;Word&lt;I&gt;&gt; {
+
+        private DFA&lt;?, I&gt; specification;
+        private FastDFA&lt;I&gt; bugLanguage;
+        private FastDFAState sink;
+        private Word&lt;I&gt; nextWord;
+        private Collection&lt;I&gt; alphabet;
+
+<span class="nc" id="L45">        DeviantTransitionSequenceIterator(DFA&lt;?, I&gt; bugLanguage, DFA&lt;?, I&gt; specification, Collection&lt;I&gt; symbols) {</span>
+<span class="nc" id="L46">            this.specification = specification;</span>
+<span class="nc" id="L47">            this.bugLanguage = new FastDFA&lt;I&gt;(new ListAlphabet&lt;I&gt;(new ArrayList&lt;&gt;(symbols)));</span>
+<span class="nc" id="L48">            createCopy(bugLanguage, this.bugLanguage, symbols);</span>
+<span class="nc" id="L49">            sink = this.bugLanguage.addState(false);</span>
+<span class="nc" id="L50">            symbols.forEach(i -&gt; this.bugLanguage.setTransition(sink, i, sink));</span>
+<span class="nc" id="L51">            this.alphabet = symbols;</span>
+<span class="nc" id="L52">        }</span>
+
+        private &lt;S1,S2&gt; void createCopy(DFA&lt;S1, I&gt; from, MutableDFA&lt;S2, I&gt;  to, Collection&lt;I&gt; alphabet) {
+<span class="nc" id="L55">            AutomatonLowLevelCopy.copy(AutomatonCopyMethod.BFS, from, alphabet, to);</span>
+<span class="nc" id="L56">        }</span>
+
+        @Override
+        public boolean hasNext() {
+<span class="nc bnc" id="L60" title="All 2 branches missed.">            return computeNextWord() != null;</span>
+        }
+
+        @Override
+        public Word&lt;I&gt; next() {
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            if (hasNext()) {</span>
+<span class="nc" id="L66">                Word&lt;I&gt; next = nextWord;</span>
+<span class="nc" id="L67">                nextWord = null;</span>
+<span class="nc" id="L68">                return next;</span>
+            }
+<span class="nc" id="L70">            throw new NoSuchElementException();</span>
+        }
+
+        private Word&lt;I&gt; computeNextWord() {
+<span class="nc bnc" id="L74" title="All 2 branches missed.">            if (nextWord != null) {</span>
+<span class="nc" id="L75">                return nextWord;</span>
+            } else {
+<span class="nc" id="L77">                Word&lt;I&gt; acceptingWord = DFAUtils.findShortestAcceptingWord(bugLanguage, alphabet);</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                if (acceptingWord != null) {</span>
+<span class="nc" id="L79">                    nextWord = acceptingWord;</span>
+<span class="nc" id="L80">                    Word&lt;I&gt; rejWord = DFAUtils.findShortestNonAcceptingPrefix(specification, acceptingWord);</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">                    if (rejWord == null) {</span>
+<span class="nc" id="L82">                        throw new InternalError(String.format(&quot;Specification does not reject word %s, which is accepted by bug language.&quot;, acceptingWord));</span>
+                    }
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                    if (rejWord.isEmpty()) {</span>
+<span class="nc" id="L85">                        throw new InternalError(&quot;A specification that rejects the empty word is a bad specification.&quot;);</span>
+                    }
+<span class="nc" id="L87">                    FastDFAState stateBeforeDeviant = bugLanguage.getState(rejWord.prefix(-1));</span>
+<span class="nc" id="L88">                    I deviantInput = rejWord.lastSymbol();</span>
+<span class="nc" id="L89">                    bugLanguage.setTransition(stateBeforeDeviant, deviantInput, sink);</span>
+                }
+            }
+<span class="nc" id="L92">            return nextWord;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

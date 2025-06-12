@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModelExplorer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.witness</a> &gt; <span class="el_source">ModelExplorer.java</span></div><h1>ModelExplorer.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.witness;
+
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
+
+import net.automatalib.automaton.UniversalDeterministicAutomaton;
+import net.automatalib.common.util.mapping.Mapping;
+import net.automatalib.common.util.mapping.MutableMapping;
+import net.automatalib.util.automaton.cover.Covers;
+import net.automatalib.word.Word;
+import se.uu.it.smbugfinder.utils.AutomatonUtils;
+import se.uu.it.smbugfinder.utils.AutomatonUtils.PredMap;
+import se.uu.it.smbugfinder.utils.AutomatonUtils.PredStruct;
+
+/**
+ * Generates iterables for exploring ways to get from the initial state to target states.
+ */
+public class ModelExplorer&lt;S, I&gt; {
+    private PredMap&lt;S, I&gt; predMap;
+    private UniversalDeterministicAutomaton&lt;S, I, ?, ?, ?&gt;  model;
+<span class="fc" id="L33">    private Predicate&lt;S&gt; startStateFilter = null;</span>
+    private Mapping&lt;S, Word&lt;I&gt;&gt; stateMapping;
+    private Collection&lt;I&gt; inputs;
+
+<span class="fc" id="L37">    public ModelExplorer(UniversalDeterministicAutomaton&lt;S, I, ?, ?, ?&gt; model, Collection&lt;I&gt; inputs) {</span>
+<span class="fc" id="L38">        this.model = model;</span>
+<span class="fc" id="L39">        this.inputs = inputs;</span>
+<span class="fc" id="L40">        this.predMap = AutomatonUtils.generatePredecessorMap(model, inputs);</span>
+<span class="fc" id="L41">    }</span>
+
+    public void setStartStateFilter(Predicate&lt;S&gt; filter) {
+<span class="nc" id="L44">        startStateFilter = filter;</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (stateMapping == null) {</span>
+<span class="nc" id="L46">            MutableMapping&lt;S, Word&lt;I&gt;&gt; stateMapping = model.createDynamicStateMapping();</span>
+<span class="nc" id="L47">            Covers.stateCoverIterator(model, inputs).forEachRemaining(seq -&gt; stateMapping.put(model.getState(seq), seq));</span>
+<span class="nc" id="L48">            this.stateMapping = stateMapping;</span>
+        }
+<span class="nc" id="L50">    }</span>
+
+    public Iterable&lt;Word&lt;I&gt;&gt; wordsToTargetStates(Collection&lt;S&gt; targetStates, SearchConfig options) {
+<span class="fc" id="L53">        return new Iterable&lt;Word&lt;I&gt;&gt;() {</span>
+            @Override
+            public Iterator&lt;Word&lt;I&gt;&gt; iterator() {
+<span class="fc" id="L56">                return new BFSPathToStateIterator(targetStates, options);</span>
+            }
+        };
+    }
+
+    private class BFSPathToStateIterator implements Iterator&lt;Word&lt;I&gt;&gt; {
+        private Queue&lt;SearchState&gt; toVisit;
+        private Word&lt;I&gt; nextWord;
+        private SearchState searchState;
+        private Iterator&lt;PredStruct&lt;S, I&gt;&gt; visitingIter;
+        private int stateVisit;
+        private boolean visitTargetStates;
+<span class="fc" id="L68">        private final AtomicLong idGenerator = new AtomicLong();</span>
+        private Set&lt;S&gt; targetStates;
+        private int queueBound;
+
+<span class="fc" id="L72">        private BFSPathToStateIterator(Collection&lt;S&gt; targetStates, SearchConfig options) {</span>
+<span class="fc" id="L73">            this.stateVisit = options.getStateVisitBound();</span>
+<span class="fc" id="L74">            this.visitTargetStates = options.isVisitTargetStates();</span>
+<span class="fc" id="L75">            this.queueBound = options.getQueueBound();</span>
+<span class="fc" id="L76">            SearchOrder order = options.getOrder();</span>
+
+<span class="pc bpc" id="L78" title="5 of 6 branches missed.">            toVisit = switch(order) {</span>
+                case MIN_VISIT -&gt;
+<span class="nc" id="L80">                    new PriorityQueue&lt;SearchState&gt;(new Comparator&lt;SearchState&gt;(){</span>
+                        @Override
+                        public int compare(SearchState s1, SearchState s2) {
+                            // we prioritize states based on the max visited value and on the order in which they were created.
+<span class="nc" id="L84">                            int compMax = Integer.compare(s1.maxVisited(), s2.maxVisited());</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">                            if (compMax == 0) {</span>
+<span class="nc" id="L86">                                return Long.compare(s1.getId(), s2.getId());</span>
+                            }
+<span class="nc" id="L88">                            return compMax;</span>
+                        }
+                    });
+                case MIN_STATE -&gt;
+<span class="nc" id="L92">                    new PriorityQueue&lt;SearchState&gt;(new Comparator&lt;SearchState&gt;(){</span>
+                        @Override
+                        public int compare(SearchState s1, SearchState s2) {
+                            // we prioritize states based on the max visited value and on the order in which they were created.
+<span class="nc" id="L96">                            int compStates = Integer.compare(s1.distinctStatesVisited(), s2.distinctStatesVisited());</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                            if (compStates == 0) {</span>
+<span class="nc" id="L98">                                return Long.compare(s1.getId(), s2.getId());</span>
+                            }
+<span class="nc" id="L100">                            return compStates;</span>
+                        }
+                    });
+                case MIN_STATE_MIN_VISIT -&gt;
+<span class="nc" id="L104">                    new PriorityQueue&lt;SearchState&gt;(new Comparator&lt;SearchState&gt;(){</span>
+                        @Override
+                        public int compare(SearchState s1, SearchState s2) {
+                            // we prioritize states based on the max visited value and on the order in which they were created.
+<span class="nc" id="L108">                            int compStates = Integer.compare(s1.distinctStatesVisited(), s2.distinctStatesVisited());</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">                            if (compStates == 0) {</span>
+<span class="nc" id="L110">                                compStates = Integer.compare(s1.maxVisited(), s2.maxVisited());</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">                                if (compStates == 0) {</span>
+<span class="nc" id="L112">                                    return Long.compare(s1.getId(), s2.getId());</span>
+                                }
+                            }
+<span class="nc" id="L115">                            return compStates;</span>
+                        }
+                    });
+                case MIN_VISIT_MIN_STATE -&gt;
+<span class="fc" id="L119">                    new PriorityQueue&lt;SearchState&gt;(new Comparator&lt;SearchState&gt;(){</span>
+                        @Override
+                        public int compare(SearchState s1, SearchState s2) {
+                            // we prioritize states based on the max visited value and on the order in which they were created.
+<span class="fc" id="L123">                            int compStates = Integer.compare(s1.maxVisited(), s2.maxVisited());</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">                            if (compStates == 0) {</span>
+<span class="fc" id="L125">                                compStates = Integer.compare(s1.distinctStatesVisited(), s2.distinctStatesVisited());</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">                                if (compStates == 0) {</span>
+<span class="fc" id="L127">                                    return Long.compare(s1.getId(), s2.getId());</span>
+                                }
+                            }
+<span class="fc" id="L130">                            return compStates;</span>
+                        }
+                    });
+                case MAX_STATE -&gt;
+<span class="nc" id="L134">                    new PriorityQueue&lt;SearchState&gt;(new Comparator&lt;SearchState&gt;(){</span>
+                        @Override
+                        public int compare(SearchState s1, SearchState s2) {
+                            // we prioritize states based on the max visited value and on the order in which they were created.
+<span class="nc" id="L138">                            int compStates = Integer.compare(s2.distinctStatesVisited(), s1.distinctStatesVisited());</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                            if (compStates == 0) {</span>
+<span class="nc" id="L140">                                return Long.compare(s1.getId(), s2.getId());</span>
+                            }
+<span class="nc" id="L142">                            return compStates;</span>
+                        }
+                    });
+                default -&gt;
+<span class="nc" id="L146">                    new ArrayDeque&lt;&gt;();</span>
+                };
+
+<span class="fc bfc" id="L149" title="All 2 branches covered.">            for (S targetState : targetStates) {</span>
+<span class="fc" id="L150">                toVisit.add(new SearchState(targetState));</span>
+<span class="fc" id="L151">            }</span>
+<span class="fc" id="L152">            this.targetStates = new HashSet&lt;&gt;(targetStates);</span>
+<span class="fc" id="L153">            visitingIter = Collections.emptyListIterator();</span>
+<span class="fc" id="L154">        }</span>
+
+        @Override
+        public boolean hasNext() {
+<span class="fc bfc" id="L158" title="All 2 branches covered.">            return computeNextWord() != null;</span>
+        }
+
+        @Override
+        public Word&lt;I&gt; next() {
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">            if (hasNext()) {</span>
+<span class="fc" id="L164">                Word&lt;I&gt; next = nextWord;</span>
+<span class="fc" id="L165">                nextWord = null;</span>
+<span class="fc" id="L166">                return next;</span>
+            }
+<span class="nc" id="L168">            throw new NoSuchElementException();</span>
+        }
+
+        /*
+         * We need use iterators to compensate for the lack of &quot;yield&quot; which would make life a lot easier.
+         */
+        private Word&lt;I&gt; computeNextWord() {
+<span class="fc bfc" id="L175" title="All 2 branches covered.">            if (nextWord != null) {</span>
+<span class="fc" id="L176">                return nextWord;</span>
+            } else {
+<span class="pc bpc" id="L178" title="1 of 4 branches missed.">                while (!toVisit.isEmpty() || visitingIter.hasNext()) {</span>
+
+<span class="pc bpc" id="L180" title="1 of 4 branches missed.">                    while (!visitingIter.hasNext() &amp;&amp; !toVisit.isEmpty()) {</span>
+<span class="fc" id="L181">                        searchState = toVisit.poll();</span>
+
+<span class="fc bfc" id="L183" title="All 2 branches covered.">                        if (predMap.containsKey(searchState.getState())) {</span>
+<span class="fc" id="L184">                            visitingIter = predMap.get(searchState.getState()).iterator();</span>
+                        }
+
+<span class="fc bfc" id="L187" title="All 2 branches covered.">                        if (model.getInitialState().equals(searchState.getState())) {</span>
+<span class="fc" id="L188">                            nextWord = searchState.getSuffix();</span>
+<span class="fc" id="L189">                            return nextWord;</span>
+                        } else {
+<span class="pc bpc" id="L191" title="3 of 4 branches missed.">                            if (startStateFilter != null &amp;&amp; startStateFilter.test(searchState.getState())) {</span>
+<span class="nc" id="L192">                                nextWord = searchState.getSuffix();</span>
+<span class="nc" id="L193">                                nextWord = stateMapping.get(searchState.getState()).concat(nextWord);</span>
+<span class="nc" id="L194">                                return nextWord;</span>
+                            }
+                        }
+                    }
+
+<span class="fc bfc" id="L199" title="All 2 branches covered.">                    while (visitingIter.hasNext()) {</span>
+<span class="fc" id="L200">                        PredStruct&lt;S, I&gt; predStruct = visitingIter.next();</span>
+<span class="fc" id="L201">                        SearchState potentialState = new SearchState(predStruct.getState(), predStruct.getInput(), searchState);</span>
+
+<span class="pc bpc" id="L203" title="3 of 6 branches missed.">                        if (potentialState.maxVisited() &lt;= stateVisit &amp;&amp; (!visitTargetStates || !targetStates.contains(predStruct.getState()))) {</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">                            if (toVisit.size() &lt; queueBound) {</span>
+<span class="fc" id="L205">                                toVisit.add(potentialState);</span>
+                            }
+                            else {
+                            }
+                        }
+<span class="fc" id="L210">                    }</span>
+                }
+            }
+
+<span class="fc" id="L214">            return nextWord;</span>
+        }
+
+
+        private class SearchState {
+
+
+            private I input;
+            private S state;
+            private long id;
+            private SearchState parent;
+<span class="fc" id="L225">            private int distinctVisited = -1;</span>
+<span class="fc" id="L226">            private int maxVisited = -1;</span>
+
+<span class="fc" id="L228">            public SearchState(S endState) {</span>
+<span class="fc" id="L229">                state = endState;</span>
+<span class="fc" id="L230">                id = idGenerator.incrementAndGet();</span>
+<span class="fc" id="L231">            }</span>
+
+<span class="fc" id="L233">            public SearchState(S state, I input, SearchState parent) {</span>
+<span class="fc" id="L234">                super();</span>
+<span class="fc" id="L235">                this.id = idGenerator.incrementAndGet();</span>
+<span class="fc" id="L236">                this.state = state;</span>
+<span class="fc" id="L237">                this.input = input;</span>
+<span class="fc" id="L238">                this.parent = parent;</span>
+<span class="fc" id="L239">            }</span>
+
+            public Word&lt;I&gt; getSuffix() {
+<span class="fc bfc" id="L242" title="All 2 branches covered.">                if (parent == null) {</span>
+<span class="fc" id="L243">                    return Word.epsilon();</span>
+                } else {
+<span class="fc" id="L245">                    return parent.getSuffix().prepend(input);</span>
+                }
+            }
+
+            public S getState() {
+<span class="fc" id="L250">                return state;</span>
+            }
+
+            public long getId() {
+<span class="fc" id="L254">                return id;</span>
+            }
+
+            public SearchState getParent() {
+<span class="fc" id="L258">                return parent;</span>
+            }
+
+            public int distinctStatesVisited() {
+<span class="fc bfc" id="L262" title="All 2 branches covered.">                if (distinctVisited == -1) {</span>
+<span class="fc" id="L263">                    Set&lt;S&gt; visited = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L264">                    SearchState crtExplState = this;</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">                    while (crtExplState != null) {</span>
+<span class="fc" id="L266">                        S crtState = crtExplState.getState();</span>
+<span class="fc" id="L267">                        visited.add(crtState);</span>
+<span class="fc" id="L268">                        crtExplState = crtExplState.getParent();</span>
+<span class="fc" id="L269">                    }</span>
+<span class="fc" id="L270">                    distinctVisited = visited.size();</span>
+                }
+
+<span class="fc" id="L273">                return distinctVisited;</span>
+            }
+
+            public int maxVisited() {
+<span class="fc bfc" id="L277" title="All 2 branches covered.">                if (maxVisited == -1) {</span>
+<span class="fc" id="L278">                    SearchState crtExplState = this;</span>
+<span class="fc" id="L279">                    Map&lt;S,Integer&gt; timesVisited = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">                    while (crtExplState != null) {</span>
+<span class="fc" id="L281">                        S crtState = crtExplState.getState();</span>
+<span class="fc bfc" id="L282" title="All 2 branches covered.">                        if (timesVisited.containsKey(crtState)) {</span>
+<span class="fc" id="L283">                            timesVisited.put(crtState, timesVisited.get(crtState) + 1);</span>
+                        } else {
+<span class="fc" id="L285">                            timesVisited.put(crtState, 1);</span>
+                        }
+<span class="fc" id="L287">                        crtExplState = crtExplState.getParent();</span>
+<span class="fc" id="L288">                    }</span>
+<span class="fc" id="L289">                    maxVisited = timesVisited.values().stream().max(Comparator.naturalOrder()).orElse(0);</span>
+                }
+<span class="fc" id="L291">                return maxVisited;</span>
+            }
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

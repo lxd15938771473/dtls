@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WitnessFinder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.witness</a> &gt; <span class="el_source">WitnessFinder.java</span></div><h1>WitnessFinder.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.witness;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import net.automatalib.word.Word;
+import net.automatalib.word.WordBuilder;
+import se.uu.it.smbugfinder.dfa.DFAAdapter;
+import se.uu.it.smbugfinder.dfa.InputSymbol;
+import se.uu.it.smbugfinder.dfa.Symbol;
+import se.uu.it.smbugfinder.dfa.SymbolMapping;
+import se.uu.it.smbugfinder.dfa.Trace;
+import se.uu.it.smbugfinder.sut.SUT;
+
+public class WitnessFinder {
+
+    private Integer bound;
+    private SequenceGenerator&lt;Symbol&gt; generator;
+
+<span class="fc" id="L19">    public WitnessFinder(SequenceGenerator&lt;Symbol&gt; generator, @Nullable Integer bound) {</span>
+<span class="fc" id="L20">        this.generator = generator;</span>
+<span class="fc" id="L21">        this.bound = bound;</span>
+<span class="fc" id="L22">    }</span>
+
+    public &lt;I,O&gt;  Trace&lt;I,O&gt; findWitness(SUT&lt;I,O&gt; sut, SymbolMapping&lt;I,O&gt; mapping, DFAAdapter sutBugLanguage, DFAAdapter bugLanguage) {
+<span class="fc" id="L25">        return findWitness(sut, mapping, sutBugLanguage, bugLanguage,  true);</span>
+    }
+
+    public &lt;I,O&gt;  Trace&lt;I,O&gt; findCounterexample(SUT&lt;I,O&gt; sut, SymbolMapping&lt;I,O&gt; mapping, DFAAdapter sutBugLanguage, DFAAdapter bugLanguage) {
+<span class="fc" id="L29">        return findWitness(sut, mapping, sutBugLanguage, bugLanguage, false);</span>
+    }
+
+    private &lt;I,O&gt; Trace&lt;I,O&gt; findWitness(SUT&lt;I,O&gt; sut, SymbolMapping&lt;I,O&gt; mapping, DFAAdapter sutBugLanguage, DFAAdapter bugLanguage, boolean desiredValidationOutcome) {
+<span class="fc" id="L33">        int count = 0;</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        for (Word&lt;Symbol&gt; sequence : generator.generateSequences(sutBugLanguage.getDfa(), sutBugLanguage.getSymbols())) {</span>
+<span class="fc" id="L35">            WordBuilder&lt;I&gt; inputWordBuilder = new WordBuilder&lt;I&gt;();</span>
+<span class="fc" id="L36">            sequence.stream().filter(s -&gt; s instanceof InputSymbol).forEach(s -&gt; inputWordBuilder.add( mapping.toInput((InputSymbol) s)));</span>
+<span class="fc" id="L37">            Word&lt;I&gt; inputWord = inputWordBuilder.toWord();</span>
+<span class="fc" id="L38">            Word&lt;O&gt; outputWord = sut.execute(inputWord);</span>
+<span class="fc" id="L39">            Trace&lt;I,O&gt; trace = new Trace&lt;I,O&gt; (inputWord, outputWord);</span>
+<span class="fc" id="L40">            Word&lt;Symbol&gt; actualSequence= mapping.fromExecutionTrace(trace);</span>
+<span class="fc" id="L41">            boolean exhibitsBug = bugLanguage.acceptsPrefix(actualSequence);</span>
+<span class="pc bpc" id="L42" title="1 of 8 branches missed.">            if ( (desiredValidationOutcome &amp;&amp; exhibitsBug) || (!desiredValidationOutcome &amp;&amp; !exhibitsBug) ) {</span>
+<span class="fc" id="L43">                return trace;</span>
+            }
+<span class="fc" id="L45">            count ++;</span>
+<span class="pc bpc" id="L46" title="2 of 4 branches missed.">            if (bound != null &amp;&amp; count &gt;= bound) {</span>
+<span class="nc" id="L47">                break;</span>
+            }
+<span class="fc" id="L49">        }</span>
+<span class="fc" id="L50">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

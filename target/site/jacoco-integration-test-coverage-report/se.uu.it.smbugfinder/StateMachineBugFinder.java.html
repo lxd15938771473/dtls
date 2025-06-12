@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StateMachineBugFinder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder</a> &gt; <span class="el_source">StateMachineBugFinder.java</span></div><h1>StateMachineBugFinder.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import net.automatalib.automaton.transducer.impl.CompactMealy;
+import net.automatalib.exception.FormatException;
+import net.automatalib.serialization.InputModelData;
+import net.automatalib.serialization.InputModelDeserializer;
+import net.automatalib.serialization.dot.DOTParsers;
+import se.uu.it.smbugfinder.DFAExporter.DirectoryDFAExporter;
+import se.uu.it.smbugfinder.dfa.MealySymbolExtractor;
+import se.uu.it.smbugfinder.dfa.Symbol;
+import se.uu.it.smbugfinder.dfa.SymbolMapping;
+import se.uu.it.smbugfinder.encoding.DefaultDFADecoder;
+import se.uu.it.smbugfinder.pattern.BugPatternLoader;
+import se.uu.it.smbugfinder.pattern.BugPatterns;
+import se.uu.it.smbugfinder.sut.SUT;
+import se.uu.it.smbugfinder.sut.SimulatedMealySUT;
+import se.uu.it.smbugfinder.sut.SocketSUT;
+
+/**
+ * StateMachineBugFinder or SMBugFinder in short, is a library for automating the detection of state machine bugs in SUTs.
+ * It takes as input the Mealy machine model of the SUT and a catalog of bugs expressed as DFAs.
+ * It then automatically detects the DFA-encoded bugs on the Mealy machine, generating witnesses exposing the violations.
+ * The witnesses can optionally be validated by executing the corresponding inputs on the SUT.
+ * This last step requires a test harness.
+ *
+ * @author Paul
+ *
+ */
+public class StateMachineBugFinder {
+    private static final String BUG_REPORT = &quot;bug_report.txt&quot;;
+    private static final String WITNESS_FOLDER = &quot;bug_witnesses&quot;;
+
+    private final StateMachineBugFinderConfig config;
+
+    /**
+     * @param config configuration containing the bug finder config, plus other options relevant when running the bug finder from the console.
+     */
+<span class="fc" id="L55">    public StateMachineBugFinder(StateMachineBugFinderConfig config) {</span>
+<span class="fc" id="L56">        this.config = config;</span>
+<span class="fc" id="L57">    }</span>
+
+
+    /**
+     * Launches the bug finder, creating an output directory containing the results (statistics, bugs, generated bug patterns, statistics, executable witnesses).
+     * @throws FileNotFoundException if the directory to save files cannot be found
+     * @throws IOException           if there a problen when writing files
+     */
+    public BugFinderResult&lt;String, String&gt;  launch() throws IOException, FormatException {
+<span class="fc" id="L66">        Files.createDirectories(Paths.get(config.getOutputDir()));</span>
+<span class="fc" id="L67">        DirectoryDFAExporter exporter = new DFAExporter.DirectoryDFAExporter(config.getOutputDir());</span>
+<span class="fc" id="L68">        BugFinderResult&lt;String, String&gt; result = launch(exporter);</span>
+<span class="fc" id="L69">        export(result, config.getOutputDir());</span>
+<span class="fc" id="L70">        return result;</span>
+    }
+
+    /**
+     * Launches the bug finder using a custom {@link DFAExporter}.
+     * @param exporter - if not null, will receive for export the bugs detected by the bug finder.
+     * @return result containing the bugs found plus statistics of the bug detection experiment.
+     */
+    public BugFinderResult&lt;String, String&gt; launch(@Nullable DFAExporter exporter) throws IOException, FormatException {
+<span class="fc" id="L79">        InputModelDeserializer&lt;@Nullable String, CompactMealy&lt;@Nullable String, @Nullable String&gt;&gt; mealyParser = DOTParsers.mealy();</span>
+<span class="fc" id="L80">        InputModelData&lt;@Nullable String, CompactMealy&lt;@Nullable String, @Nullable String&gt;&gt; sutModelData = mealyParser.readModel(getResource(config.getModel()));</span>
+
+<span class="fc" id="L82">        BugPatternLoader loader = new BugPatternLoader(new DefaultDFADecoder());</span>
+
+<span class="fc" id="L84">        SymbolMapping&lt;String, String&gt; symbolMapping = new StringSymbolMapper(config.getEmptyOutput(), config.getSeparator());</span>
+<span class="fc" id="L85">        List&lt;Symbol&gt; allSymbols = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L86">        SUT&lt;String,String&gt; sut = null;</span>
+<span class="fc" id="L87">        MealySymbolExtractor.extractSymbols(sutModelData.model, sutModelData.alphabet, symbolMapping, allSymbols);</span>
+<span class="fc" id="L88">        BugPatterns bp = loader.loadPatterns(config.getPatterns(), allSymbols);</span>
+<span class="fc" id="L89">        StateMachineBugFinderCoreConfig finderConfig = config.getSmBugFinderConfig();</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (finderConfig.isValidate()) {</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            if (config.getHarnessAddress() != null) {</span>
+<span class="nc" id="L92">                String[] hostPort = config.getHarnessAddress().split(&quot;\\:&quot;, -1);</span>
+<span class="nc" id="L93">                String host = hostPort[0];</span>
+<span class="nc" id="L94">                int port = Integer.parseInt(hostPort[1]);</span>
+<span class="nc" id="L95">                Socket socket = new Socket(host, port);</span>
+<span class="nc" id="L96">                sut = new SocketSUT(socket, config.getResetMessage(), config.getResetConfirmationMessage());</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            } else if (config.getValidationModel() != null) {</span>
+<span class="nc" id="L98">                InputModelData&lt;@Nullable String, CompactMealy&lt;@Nullable String, @Nullable String&gt;&gt; validationModelPath = mealyParser.readModel(getResource(config.getValidationModel()));</span>
+<span class="nc" id="L99">                sut = new SimulatedMealySUT&lt;String, String&gt;(validationModelPath.model);</span>
+<span class="nc" id="L100">            } else {</span>
+<span class="nc" id="L101">                throw new ConfigurationException(&quot;Unable to validate since neither the address of a test harness nor a validation model were provided&quot;);</span>
+            }
+        }
+
+<span class="fc" id="L105">        StateMachineBugFinderCore&lt;String, String&gt; modelBugFinder = new StateMachineBugFinderCore&lt;&gt;(finderConfig);</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">        if (exporter != null) {</span>
+<span class="fc" id="L107">            modelBugFinder.setExporter(exporter);</span>
+        }
+<span class="fc" id="L109">        BugFinderResult&lt;String, String&gt; result  = modelBugFinder.findBugs(bp, sutModelData.model, sutModelData.alphabet, symbolMapping, sut);</span>
+<span class="fc" id="L110">        return result;</span>
+    }
+
+    private void export(BugFinderResult&lt;String, String&gt; result, String outputDirectory) throws IOException {
+<span class="fc" id="L114">        result.doExport(new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8), true));</span>
+<span class="fc" id="L115">        result.doExport(new PrintWriter(new OutputStreamWriter(new FileOutputStream(Paths.get(outputDirectory, BUG_REPORT).toFile()), StandardCharsets.UTF_8), true));</span>
+<span class="fc" id="L116">        File witnessFolder = Paths.get(outputDirectory, WITNESS_FOLDER).toFile();</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        if (witnessFolder.exists()) {</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">            if (!witnessFolder.isDirectory()) {</span>
+<span class="nc" id="L119">                throw new RuntimeException(&quot;File %s already exists and is not a folder&quot;.formatted(witnessFolder.toString()));</span>
+            }
+        } else {
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">            if (!witnessFolder.mkdirs()) {</span>
+<span class="nc" id="L123">                throw new RuntimeException(&quot;Failed to create witness folder&quot;);</span>
+            }
+        }
+<span class="fc" id="L126">        result.generateExecutableWitnesses(witnessFolder);</span>
+<span class="fc" id="L127">    }</span>
+
+    private InputStream getResource(String path) throws FileNotFoundException {
+<span class="fc" id="L130">        InputStream resource = StateMachineBugFinder.class.getResourceAsStream(path);</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        if (resource == null) {</span>
+<span class="fc" id="L132">            resource = new FileInputStream(path);</span>
+        }
+<span class="fc" id="L134">        return resource;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

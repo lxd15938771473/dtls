@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DFAAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.dfa</a> &gt; <span class="el_source">DFAAdapter.java</span></div><h1>DFAAdapter.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.dfa;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import net.automatalib.alphabet.impl.ListAlphabet;
+import net.automatalib.automaton.fsa.DFA;
+import net.automatalib.automaton.fsa.impl.CompactDFA;
+import net.automatalib.automaton.fsa.impl.FastDFA;
+import net.automatalib.automaton.fsa.impl.FastDFAState;
+import net.automatalib.serialization.dot.GraphDOT;
+import net.automatalib.util.automaton.copy.AutomatonCopyMethod;
+import net.automatalib.util.automaton.copy.AutomatonLowLevelCopy;
+import net.automatalib.util.automaton.fsa.DFAs;
+import net.automatalib.util.ts.acceptor.AcceptanceCombiner;
+import net.automatalib.word.Word;
+import se.uu.it.smbugfinder.utils.DFAUtils;
+
+/**
+ * DFA adapter class that facilitates performing fundamental DFA operations such as complementing, intersection, etc.
+ */
+public class DFAAdapter {
+    private DFA&lt;?, Symbol&gt; dfa;
+    private List&lt;Symbol&gt; symbols;
+
+<span class="fc" id="L29">    public DFAAdapter(DFA&lt;?, Symbol&gt; dfa, Collection&lt;Symbol&gt; symbols) {</span>
+<span class="fc" id="L30">        this.dfa = dfa;</span>
+<span class="fc" id="L31">        this.symbols = new ArrayList&lt;&gt;(symbols);</span>
+<span class="fc" id="L32">    }</span>
+
+    public DFA&lt;?, Symbol&gt; getDfa() {
+<span class="fc" id="L35">        return dfa;</span>
+    }
+
+    public List&lt;Symbol&gt; getSymbols() {
+<span class="fc" id="L39">        return symbols;</span>
+    }
+
+    private FastDFA&lt;Symbol&gt; newDfa() {
+<span class="fc" id="L43">        return new FastDFA&lt;&gt;(new ListAlphabet&lt;Symbol&gt;(symbols));</span>
+    }
+
+    /**
+     * Returns an adapter containing the complement of the underlying DFA.
+     */
+    public DFAAdapter complement() {
+<span class="nc" id="L50">        FastDFA&lt;Symbol&gt; complementDfa = newDfa();</span>
+<span class="nc" id="L51">        DFAs.complement(dfa, symbols, complementDfa);</span>
+<span class="nc" id="L52">        return new DFAAdapter(complementDfa, symbols);</span>
+    }
+
+    /**
+     * Returns an adapter containing the intersection between the underlying DFA and the DFA of another adapter.
+     * It is advisable that this model is reduced/minimized, since it may contain many unreachable states.
+     */
+    public DFAAdapter intersect(DFAAdapter adapter) {
+<span class="fc" id="L60">        FastDFA&lt;Symbol&gt; intersectionDfa = newDfa();</span>
+<span class="fc" id="L61">        DFAs.combine(adapter.getDfa(), dfa, symbols, intersectionDfa, AcceptanceCombiner.AND);</span>
+<span class="fc" id="L62">        return new DFAAdapter(intersectionDfa, intersectionDfa.getInputAlphabet());</span>
+    }
+
+    /**
+     * Returns an adapter containing the union between the underlying DFA and the DFA of another adapter.
+     * It is advisable that this model is reduced/minimized, since it may contain many unreachable states.
+     */
+    public DFAAdapter union(DFAAdapter adapter) {
+<span class="nc" id="L70">        FastDFA&lt;Symbol&gt; unionDfa = newDfa();</span>
+<span class="nc" id="L71">        DFAs.combine(adapter.getDfa(), dfa, symbols, unionDfa, AcceptanceCombiner.OR);</span>
+<span class="nc" id="L72">        return new DFAAdapter(unionDfa, unionDfa.getInputAlphabet());</span>
+    }
+
+    /**
+     * Returns an adapter containing a reduced copy of the underlying DFA in which unreachable states are removed.
+     */
+    public DFAAdapter reduce() {
+<span class="nc" id="L79">        List&lt;FastDFAState&gt; reachableStates = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L80">        FastDFA&lt;Symbol&gt; reducedDfa = newDfa();</span>
+<span class="nc" id="L81">        AutomatonLowLevelCopy.copy(AutomatonCopyMethod.DFS, dfa, symbols, reducedDfa);</span>
+<span class="nc" id="L82">        DFAUtils.reachableStates(reducedDfa, symbols, reachableStates);</span>
+<span class="nc" id="L83">        List&lt;FastDFAState&gt; statesToRemove = new ArrayList&lt;&gt;(reducedDfa.getStates());</span>
+<span class="nc" id="L84">        statesToRemove.removeAll(reachableStates);</span>
+<span class="nc" id="L85">        statesToRemove.forEach(s -&gt; reducedDfa.removeState(s));</span>
+<span class="nc" id="L86">        return new DFAAdapter(reducedDfa, reducedDfa.getInputAlphabet());</span>
+    }
+
+    /**
+     * Returns an adapter containing the DFA resulting from minimizing the underlying DFA using Hopcroft's minimization algorithm.
+     */
+    public DFAAdapter minimize() {
+<span class="fc" id="L93">        CompactDFA&lt;Symbol&gt; result = DFAs.minimize(dfa, new ListAlphabet&lt;&gt;(symbols));</span>
+<span class="fc" id="L94">        FastDFA&lt;Symbol&gt; minimizedCopy = newDfa();</span>
+<span class="fc" id="L95">        AutomatonLowLevelCopy.copy(AutomatonCopyMethod.DFS, result, result.getInputAlphabet(), minimizedCopy);</span>
+<span class="fc" id="L96">        return new DFAAdapter(minimizedCopy, minimizedCopy.getInputAlphabet());</span>
+    }
+
+    /**
+     * Returns an adapter containing a fully specified copy of the underlying DFA.
+     */
+    public DFAAdapter complete() {
+<span class="fc" id="L103">        FastDFA&lt;Symbol&gt; fullySpecifiedDfa = newDfa();</span>
+<span class="fc" id="L104">        DFAs.complete(dfa, symbols, fullySpecifiedDfa);</span>
+<span class="fc" id="L105">        return new DFAAdapter(fullySpecifiedDfa, fullySpecifiedDfa.getInputAlphabet());</span>
+    }
+
+    public boolean accepts(Word&lt;Symbol&gt; sequence) {
+<span class="pc bpc" id="L109" title="1 of 4 branches missed.">        return symbols.containsAll(sequence.asList()) &amp;&amp; dfa.accepts(sequence);</span>
+    }
+
+    public boolean acceptsPrefix(Word&lt;Symbol&gt; sequence) {
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">        if (symbols.containsAll(sequence.asList())) {</span>
+<span class="fc" id="L114">            return sequence.prefixes(true).stream().anyMatch( p -&gt; dfa.accepts(p));</span>
+        }
+<span class="nc" id="L116">        return false;</span>
+    }
+
+    /**
+     * True if the specification is equivalent to the empty language.
+     */
+    public boolean isEmpty() {
+<span class="fc" id="L123">        return DFAs.acceptsEmptyLanguage(dfa);</span>
+    }
+
+    /**
+     * Generates a shortest accepting sequence.
+     */
+    public Word&lt;Symbol&gt; getShortestAcceptingSequence() {
+<span class="fc" id="L130">        return DFAUtils.findShortestAcceptingWord(dfa, symbols);</span>
+    }
+
+    public String path(Word&lt;Symbol&gt; sequence) {
+<span class="nc" id="L134">        StringBuilder builder = new StringBuilder();</span>
+<span class="nc" id="L135">        Word&lt;Symbol&gt; prefix = Word.epsilon();</span>
+<span class="nc" id="L136">        Object state = dfa.getState(prefix);</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        for (Symbol input : sequence) {</span>
+<span class="nc" id="L138">            builder.append(state);</span>
+<span class="nc" id="L139">            prefix = prefix.append(input);</span>
+<span class="nc" id="L140">            builder.append(&quot; &quot;).append(input).append(&quot; &quot;);</span>
+<span class="nc" id="L141">            state = dfa.getState(prefix);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">            if (state == null) {</span>
+<span class="nc" id="L143">                break;</span>
+            }
+<span class="nc" id="L145">        }</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (state != null) {</span>
+<span class="nc" id="L147">            builder.append(state);</span>
+        }
+<span class="nc" id="L149">        return builder.toString();</span>
+    }
+
+    public void export(Writer writer) throws IOException {
+<span class="fc" id="L153">        GraphDOT.write(dfa, symbols, writer);</span>
+<span class="fc" id="L154">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

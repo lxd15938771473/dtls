@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AutomatonUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.utils</a> &gt; <span class="el_source">AutomatonUtils.java</span></div><h1>AutomatonUtils.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.utils;
+
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Queue;
+import java.util.Set;
+
+import net.automatalib.automaton.UniversalDeterministicAutomaton;
+import net.automatalib.word.Word;
+
+<span class="nc" id="L14">public class AutomatonUtils {</span>
+
+    /**
+     * Determines all the states which can be reached using the given inputs on the automaton.
+     * @param automaton        the model expressed as an automaton
+     * @param inputs           the given inputs
+     * @param reachableStates  a collection of initial reachable states
+     */
+    public static &lt;S,I&gt; void reachableStates(UniversalDeterministicAutomaton&lt;S, I, ?, ?, ?&gt; automaton, Collection&lt;I&gt; inputs, Collection&lt;S&gt; reachableStates) {
+<span class="fc" id="L23">        reachableStates(automaton, inputs, automaton.getInitialState(), reachableStates);</span>
+<span class="fc" id="L24">    }</span>
+
+    public static &lt;S,I&gt; void reachableStates(UniversalDeterministicAutomaton&lt;S, I, ?, ?, ?&gt;  automaton, Collection&lt;I&gt; inputs, S fromState, Collection&lt;S&gt; reachableStates) {
+<span class="fc" id="L27">        Queue&lt;S&gt; toVisit = new ArrayDeque&lt;S&gt;();</span>
+<span class="fc" id="L28">        Set&lt;S&gt; visited = new HashSet&lt;S&gt;();</span>
+<span class="fc" id="L29">        Set&lt;S&gt; reachable = new LinkedHashSet&lt;S&gt;();</span>
+<span class="fc" id="L30">        toVisit.add(fromState);</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        while (!toVisit.isEmpty()) {</span>
+<span class="fc" id="L32">            S state = toVisit.poll();</span>
+<span class="fc" id="L33">            visited.add(state);</span>
+<span class="fc" id="L34">            reachable.add(state);</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">            for (I input : inputs) {</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">                for (S nextState : automaton.getSuccessors(state, input)) {</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">                    if (!visited.contains(nextState)) {</span>
+<span class="fc" id="L38">                        toVisit.add(nextState);</span>
+                    }
+<span class="fc" id="L40">                }</span>
+<span class="fc" id="L41">            }</span>
+<span class="fc" id="L42">        }</span>
+<span class="fc" id="L43">        reachableStates.addAll(reachable);</span>
+<span class="fc" id="L44">    }</span>
+
+    public static &lt;S,I&gt; void wordsToTargetState(UniversalDeterministicAutomaton&lt;S, I, ?, ?, ?&gt;  automaton,
+            Collection&lt;I&gt; inputs, S targetState, Collection&lt;Word&lt;I&gt;&gt; words) {
+<span class="nc" id="L48">        PredMap&lt;S,I&gt; predMap = generatePredecessorMap(automaton, inputs);</span>
+<span class="nc" id="L49">        wordsToTargetState(automaton, inputs, targetState, predMap, words);</span>
+<span class="nc" id="L50">    }</span>
+
+    public static &lt;S,I&gt; void wordsToTargetState(UniversalDeterministicAutomaton&lt;S, I, ?, ?, ?&gt;  automaton,
+            Collection&lt;I&gt; inputs, S targetState,
+            PredMap&lt;S,I&gt; map, Collection&lt;Word&lt;I&gt;&gt; words) {
+<span class="nc" id="L55">        Queue&lt;VisitStruct&lt;S,I&gt;&gt; toVisit = new ArrayDeque&lt;VisitStruct&lt;S,I&gt;&gt;();</span>
+<span class="nc" id="L56">        Set&lt;S&gt; hs = new HashSet&lt;S&gt;();</span>
+<span class="nc" id="L57">        hs.add(targetState);</span>
+<span class="nc" id="L58">        toVisit.add(new VisitStruct&lt;S,I&gt;(targetState, Word.epsilon(), hs));</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        while (!toVisit.isEmpty()) {</span>
+<span class="nc" id="L60">            VisitStruct&lt;S, I&gt; visitStruct = toVisit.poll();</span>
+<span class="nc" id="L61">            Collection&lt;PredStruct&lt;S,I&gt;&gt; predStructs = map.get(visitStruct.getState());</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            if (predStructs != null) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                for (PredStruct&lt;S,I&gt; predStruct : predStructs) {</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">                    if (predStruct.getState().equals(automaton.getInitialState())) {</span>
+<span class="nc" id="L65">                        words.add(Word.fromLetter(predStruct.getInput()).concat(visitStruct.getWord()));</span>
+                    } else {
+<span class="nc bnc" id="L67" title="All 2 branches missed.">                        if (!visitStruct.hasVisited(predStruct.getState())) {</span>
+<span class="nc" id="L68">                            HashSet&lt;S&gt; stateSet = new HashSet&lt;S&gt;(visitStruct.getVisited());</span>
+<span class="nc" id="L69">                            stateSet.add(predStruct.getState());</span>
+<span class="nc" id="L70">                            toVisit.add(new VisitStruct&lt;S,I&gt;(predStruct.getState(),</span>
+<span class="nc" id="L71">                                    Word.fromLetter(predStruct.getInput()).concat(visitStruct.getWord()), stateSet));</span>
+                        }
+                    }
+<span class="nc" id="L74">                }</span>
+            }
+<span class="nc" id="L76">        }</span>
+<span class="nc" id="L77">    }</span>
+
+    public static &lt;S,I&gt; PredMap&lt;S,I&gt; generatePredecessorMap(UniversalDeterministicAutomaton&lt;S, I, ?, ?, ?&gt; automaton, Collection&lt;I&gt; inputs) {
+<span class="fc" id="L80">        PredMap&lt;S,I&gt; predMap = new PredMap&lt;&gt;();</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        for (S s : automaton.getStates()) {</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">            for (I input : inputs) {</span>
+<span class="fc" id="L83">                S succ= automaton.getSuccessor(s, input);</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">                if (succ != null) {</span>
+<span class="fc" id="L85">                    predMap.putIfAbsent(succ, new LinkedHashSet&lt;&gt;());</span>
+<span class="fc" id="L86">                    predMap.get(succ).add(new PredStruct&lt;&gt;(s, input));</span>
+                }
+<span class="fc" id="L88">            }</span>
+<span class="fc" id="L89">        }</span>
+<span class="fc" id="L90">        return predMap;</span>
+    }
+
+    private static class VisitStruct&lt;S,I&gt; {
+        private Word&lt;I&gt; word;
+        private Set&lt;S&gt; visited;
+        private S state;
+        public Word&lt;I&gt; getWord() {
+<span class="nc" id="L98">            return word;</span>
+        }
+        public S getState() {
+<span class="nc" id="L101">            return state;</span>
+        }
+
+        public boolean hasVisited(S state) {
+<span class="nc" id="L105">            return visited.contains(state);</span>
+        }
+
+        public Set&lt;S&gt; getVisited() {
+<span class="nc" id="L109">            return visited;</span>
+        }
+
+        public VisitStruct(S state, Word&lt;I&gt; word, Set&lt;S&gt; visited) {
+<span class="nc" id="L113">            super();</span>
+<span class="nc" id="L114">            this.word = word;</span>
+<span class="nc" id="L115">            this.state = state;</span>
+<span class="nc" id="L116">            this.visited = visited;</span>
+<span class="nc" id="L117">        }</span>
+    }
+
+<span class="fc" id="L120">    public static class PredMap &lt;S,I&gt; extends LinkedHashMap&lt;S, Collection&lt;PredStruct&lt;S, I&gt;&gt;&gt;{</span>
+        /**
+         *
+         */
+        private static final long serialVersionUID = 1L;
+    }
+
+    public static class PredStruct &lt;S,I&gt; {
+        private S state;
+        private I input;
+
+        public S getState() {
+<span class="fc" id="L132">            return state;</span>
+        }
+
+        public PredStruct(S state, I input) {
+<span class="fc" id="L136">            super();</span>
+<span class="fc" id="L137">            this.state = state;</span>
+<span class="fc" id="L138">            this.input = input;</span>
+<span class="fc" id="L139">        }</span>
+
+        public I getInput() {
+<span class="fc" id="L142">            return input;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

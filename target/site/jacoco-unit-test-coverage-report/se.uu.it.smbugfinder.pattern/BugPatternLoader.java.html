@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BugPatternLoader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.pattern</a> &gt; <span class="el_source">BugPatternLoader.java</span></div><h1>BugPatternLoader.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.pattern;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.function.Function;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import net.automatalib.automaton.transducer.MealyMachine;
+import se.uu.it.smbugfinder.dfa.DFAAdapter;
+import se.uu.it.smbugfinder.dfa.MealySymbolExtractor;
+import se.uu.it.smbugfinder.dfa.Symbol;
+import se.uu.it.smbugfinder.dfa.SymbolMapping;
+import se.uu.it.smbugfinder.encoding.DFADecoder;
+
+/**
+ * Loads bug patterns from a supplied directory path.
+ */
+public class BugPatternLoader {
+<span class="fc" id="L38">    private static final Logger LOGGER = LoggerFactory.getLogger(BugPatternLoader.class);</span>
+    private static JAXBContext context;
+
+    private static synchronized JAXBContext getJAXBContext()
+            throws JAXBException, IOException {
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        if (context == null) {</span>
+<span class="fc" id="L44">            context = JAXBContext.newInstance(BugPatterns.class,</span>
+                    AbstractBugPattern.class);
+        }
+<span class="fc" id="L47">        return context;</span>
+    }
+
+    public static &lt;I,O&gt; BugPatterns loadPatterns(String patternsDirectory, DFADecoder decoder, MealyMachine&lt;?, I, ?, O&gt; mealy, Collection&lt;I&gt; inputs, SymbolMapping&lt;I,O&gt; mapping) {
+<span class="nc" id="L51">        Set&lt;Symbol&gt; symbols = new LinkedHashSet&lt;&gt;();</span>
+<span class="nc" id="L52">        MealySymbolExtractor.extractSymbols(mealy, inputs, mapping, symbols);</span>
+<span class="nc" id="L53">        BugPatternLoader loader = new BugPatternLoader(decoder);</span>
+<span class="nc" id="L54">        return loader.loadPatterns(patternsDirectory, symbols);</span>
+    }
+
+    private DFADecoder dfaDecoder;
+
+<span class="fc" id="L59">    public BugPatternLoader(DFADecoder dfaDecoder) {</span>
+<span class="fc" id="L60">        this.dfaDecoder = dfaDecoder;</span>
+<span class="fc" id="L61">    }</span>
+
+    public BugPatterns loadPatterns(String patternsFile, Collection&lt;Symbol&gt; symbols) throws BugPatternLoadingException {
+<span class="fc" id="L64">        BugPatterns bugPatterns = null;</span>
+<span class="fc" id="L65">        LOGGER.info(&quot;Loading bug patterns&quot;);</span>
+<span class="fc" id="L66">        String patternsFileName = Path.of(patternsFile).getFileName().toString();</span>
+<span class="fc" id="L67">        URI parentFolderURI = URI.create(</span>
+<span class="fc" id="L68">                patternsFile.substring(0,</span>
+<span class="fc" id="L69">                        patternsFile.length() - patternsFileName.length()));</span>
+<span class="fc" id="L70">        InputStream patternsStream = getResourceAsStream(patternsFile);</span>
+        try {
+<span class="fc" id="L72">            bugPatterns = loadPatterns(patternsStream);</span>
+<span class="nc" id="L73">        } catch (Exception e) {</span>
+<span class="nc" id="L74">            throw new BugPatternLoadingException(&quot;Failed to load patterns from catalogue &quot; + patternsFile, e);</span>
+<span class="fc" id="L75">        }</span>
+
+<span class="fc" id="L77">        preparePatterns(bugPatterns, parentFolderURI, symbols);</span>
+<span class="fc" id="L78">        LOGGER.info(&quot;Successfully loaded {} bug patterns from catalogue {}&quot;, bugPatterns.getBugPatterns().size(), patternsFile);</span>
+<span class="fc" id="L79">        return bugPatterns;</span>
+    }
+
+    private BugPatterns loadPatterns(InputStream inputStream) throws JAXBException, IOException, XMLStreamException {
+<span class="fc" id="L83">        Unmarshaller unmarshaller = getJAXBContext().createUnmarshaller();</span>
+<span class="fc" id="L84">        XMLInputFactory xif = XMLInputFactory.newFactory();</span>
+<span class="fc" id="L85">        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);</span>
+<span class="fc" id="L86">        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false);</span>
+<span class="fc" id="L87">        XMLStreamReader xsr = xif.createXMLStreamReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));</span>
+<span class="fc" id="L88">        BugPatterns bugPatterns = (BugPatterns) unmarshaller.unmarshal(xsr);</span>
+<span class="fc" id="L89">        bugPatterns.prepare();</span>
+
+<span class="fc" id="L91">        return bugPatterns;</span>
+
+    }
+
+    private void preparePatterns(BugPatterns bugPatterns, URI location, Collection&lt;Symbol&gt; symbols) {
+<span class="fc" id="L96">        Function&lt;String, DFAAdapter&gt; loadSpecification = p -&gt; loadDfa(p, location, symbols);</span>
+
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        if (bugPatterns.getSpecificationLanguagePath() != null) {</span>
+<span class="nc" id="L99">            DFAAdapter conformanceLanguage = loadSpecification.apply(bugPatterns.getSpecificationLanguagePath());</span>
+<span class="nc" id="L100">            bugPatterns.setSpecificationLanguage(conformanceLanguage);</span>
+        }
+
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        for (BugPattern bugPattern : bugPatterns.getBugPatterns()) {</span>
+<span class="fc" id="L104">            DFAAdapter bugLanguage = loadSpecification.apply(bugPattern.getBugLanguagePath());</span>
+<span class="fc" id="L105">            bugPattern.setBugLanguage(bugLanguage);</span>
+<span class="fc" id="L106">        }</span>
+<span class="fc" id="L107">    }</span>
+
+    private DFAAdapter loadDfa(String encodedDfaPath, URI location, Collection&lt;Symbol&gt; symbols){
+<span class="fc" id="L110">        LOGGER.info(&quot;Loading DFA at path: {}&quot;, encodedDfaPath);</span>
+<span class="fc" id="L111">        URI encodedDfaLocation = location.resolve(encodedDfaPath);</span>
+<span class="fc" id="L112">        InputStream encodedDfaStream = getResourceAsStream(encodedDfaLocation.getPath());</span>
+        try {
+<span class="fc" id="L114">            DFAAdapter dfaAdapter = dfaDecoder.decode(encodedDfaStream, symbols);</span>
+<span class="fc" id="L115">            return dfaAdapter;</span>
+<span class="nc" id="L116">        } catch (Exception e) {</span>
+<span class="nc" id="L117">            throw new BugPatternLoadingException(&quot;Error handling encoded dfa at path &quot; + encodedDfaLocation.getPath(), e);</span>
+        }
+    }
+
+    private InputStream getResourceAsStream(String resourcePath) {
+<span class="fc" id="L122">        InputStream encodedDfaStream = BugPatternLoader.class.getResourceAsStream(resourcePath);</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">        if (encodedDfaStream == null) {</span>
+<span class="nc" id="L124">            File file = new File(resourcePath);</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">            if (file.exists()) {</span>
+                try {
+<span class="nc" id="L127">                    encodedDfaStream = new FileInputStream(file);</span>
+<span class="nc" id="L128">                } catch (FileNotFoundException e) {</span>
+<span class="nc" id="L129">                    throw new BugPatternLoadingException(&quot;Failed to load resource at path &quot; + resourcePath, e);</span>
+<span class="nc" id="L130">                }</span>
+            }
+        }
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">        if (encodedDfaStream == null) {</span>
+<span class="nc" id="L134">            throw new BugPatternLoadingException(&quot;Could not find resource at path &quot; + resourcePath);</span>
+        }
+
+<span class="fc" id="L137">        return encodedDfaStream;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

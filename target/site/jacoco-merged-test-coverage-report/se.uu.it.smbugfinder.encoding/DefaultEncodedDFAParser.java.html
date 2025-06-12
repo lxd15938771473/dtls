@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultEncodedDFAParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.encoding</a> &gt; <span class="el_source">DefaultEncodedDFAParser.java</span></div><h1>DefaultEncodedDFAParser.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.encoding;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import net.automatalib.automaton.fsa.impl.CompactDFA;
+import net.automatalib.exception.FormatException;
+import net.automatalib.serialization.InputModelData;
+import net.automatalib.serialization.InputModelDeserializer;
+import net.automatalib.serialization.dot.DOTParsers;
+import se.uu.it.smbugfinder.encoding.javacc.LabelParserFacade;
+import se.uu.it.smbugfinder.encoding.javacc.TokenMgrError;
+
+public class DefaultEncodedDFAParser implements EncodedTSParser {
+
+    private ParsingContextFactory factory;
+    private Map&lt;String, Label&gt; cache;
+
+<span class="fc" id="L21">    public DefaultEncodedDFAParser(ParsingContextFactory factory) {</span>
+<span class="fc" id="L22">        this.factory = factory;</span>
+<span class="fc" id="L23">    }</span>
+
+
+    public DefaultEncodedDFAParser() {
+<span class="fc" id="L27">        this(ParsingContextFactory.EMPTY);</span>
+<span class="fc" id="L28">    }</span>
+
+    @Override
+    public EncodedDFA parse(InputStream encodedDfaStream) throws IOException, FormatException {
+<span class="fc" id="L32">        ParsingContext context = factory.newContext();</span>
+<span class="fc" id="L33">        cache = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L34">        InputModelDeserializer&lt;Label, CompactDFA&lt;Label&gt;&gt;  deserializer = DOTParsers.dfa(</span>
+                DOTParsers.DEFAULT_FSA_NODE_PARSER,
+<span class="fc" id="L36">                m -&gt; processDFALabel(DOTParsers.DEFAULT_EDGE_PARSER.apply(m), context));</span>
+<span class="fc" id="L37">        InputModelData&lt;Label, CompactDFA&lt;Label&gt;&gt; inputModel = deserializer.readModel(encodedDfaStream);</span>
+<span class="fc" id="L38">        return new EncodedDFA(inputModel.model, inputModel.alphabet);</span>
+    }
+
+    /*
+     * We use a cache to ensure that the same label string mapped to the same Label object, which is a requirement for the deserializer.
+     */
+    protected Label processDFALabel(String labelString, ParsingContext context) {
+<span class="fc" id="L45">        labelString = labelString.replace(&quot;\\\\&quot;, &quot;\\&quot;);</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if (cache.containsKey(labelString)) {</span>
+<span class="fc" id="L47">            return cache.get(labelString);</span>
+        }
+        try {
+<span class="fc" id="L50">            Label label = LabelParserFacade.parseLabelString(labelString, context);</span>
+<span class="fc" id="L51">            cache.put(labelString, label);</span>
+<span class="fc" id="L52">            return label;</span>
+<span class="nc" id="L53">        } catch (se.uu.it.smbugfinder.encoding.javacc.ParseException | TokenMgrError e) {</span>
+<span class="nc" id="L54">            throw new InvalidLabelException(labelString, e);</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

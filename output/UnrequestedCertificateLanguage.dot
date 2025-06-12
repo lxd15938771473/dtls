@@ -1,0 +1,28 @@
+digraph g {
+
+	s0 [shape="circle" label="s0"];
+	s0 -> s0 [label="I_HELLO_VERIFY_REQUEST"];
+	s0 -> s0 [label="I_SERVER_HELLO_DONE"];
+	s0 -> s0 [label="I_HELLO_REQUEST"];
+	s0 -> s0 [label="I_APPLICATION"];
+	s0 -> s0 [label="I_Alert(WARNING,CLOSE_NOTIFY)"];
+	s0 -> s0 [label="I_CHANGE_CIPHER_SPEC"];
+	s0 -> s0 [label="I_PSK_SERVER_HELLO"];
+	s0 -> s0 [label="I_FINISHED"];
+	s0 -> s0 [label="I_Alert(FATAL,UNEXPECTED_MESSAGE)"];
+	s0 -> s0 [label="O_DISABLED"];
+	s0 -> s0 [label="O_SOCKET_CLOSED"];
+	s0 -> s0 [label="O_APPLICATION"];
+	s0 -> s0 [label="O_Alert(WARNING,CLOSE_NOTIFY)"];
+	s0 -> s0 [label="O_PSK_CLIENT_KEY_EXCHANGE"];
+	s0 -> s0 [label="O_CHANGE_CIPHER_SPEC"];
+	s0 -> s0 [label="O_FINISHED"];
+	s0 -> s0 [label="O_Alert(FATAL,DECODE_ERROR)"];
+	s0 -> s0 [label="O_CLIENT_HELLO"];
+	s0 -> s0 [label="O_CLIENT_HELLO+"];
+	s0 -> s0 [label="O_Alert(FATAL,UNEXPECTED_MESSAGE)"];
+
+__start0 [label="" shape="none" width="0" height="0"];
+__start0 -> s0;
+
+}

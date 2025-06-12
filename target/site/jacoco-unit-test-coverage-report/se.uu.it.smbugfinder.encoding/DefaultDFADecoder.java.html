@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultDFADecoder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.encoding</a> &gt; <span class="el_source">DefaultDFADecoder.java</span></div><h1>DefaultDFADecoder.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.encoding;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import net.automatalib.alphabet.Alphabet;
+import net.automatalib.alphabet.impl.ListAlphabet;
+import net.automatalib.automaton.fsa.impl.FastDFA;
+import net.automatalib.ts.acceptor.DeterministicAcceptorTS;
+import net.automatalib.util.automaton.fsa.DFAs;
+import net.automatalib.util.ts.copy.TSCopy;
+import net.automatalib.util.ts.traversal.TSTraversalMethod;
+import se.uu.it.smbugfinder.dfa.DFAAdapter;
+import se.uu.it.smbugfinder.dfa.Symbol;
+
+public class DefaultDFADecoder implements DFADecoder {
+<span class="fc" id="L18">    private TokenMatcher tokenMatcher = new DefaultTokenMatcher();</span>
+    private EncodedTSParser parser;
+
+<span class="fc" id="L21">    public DefaultDFADecoder(EncodedTSParser parser) {</span>
+<span class="fc" id="L22">        this.parser = parser;</span>
+<span class="fc" id="L23">    }</span>
+
+    public DefaultDFADecoder() {
+<span class="fc" id="L26">        this(new DefaultEncodedDFAParser());</span>
+<span class="fc" id="L27">    }</span>
+
+    public void setTokenMatcher(TokenMatcher tokenMatcher) {
+<span class="fc" id="L30">        this.tokenMatcher = tokenMatcher;</span>
+<span class="fc" id="L31">    }</span>
+
+    @Override
+    public DFAAdapter decode(InputStream encodedTsStream, Collection&lt;Symbol&gt; symbols) throws Exception  {
+<span class="fc" id="L35">        EncodedTS encodedTs = parser.parse(encodedTsStream);</span>
+<span class="fc" id="L36">        DFAAdapter decodedDfa = decode(encodedTs, symbols);</span>
+<span class="fc" id="L37">        return decodedDfa;</span>
+    }
+
+    DFAAdapter decode(EncodedTS encodedTs,
+            Collection&lt;Symbol&gt; symbols) {
+<span class="fc" id="L42">        FastDFA&lt;Symbol&gt; decodedDfa = decode(encodedTs.getEncodedTS(), encodedTs.getLabels(), symbols);</span>
+<span class="fc" id="L43">        FastDFA&lt;Symbol&gt; inputCompleteDfa = new FastDFA&lt;Symbol&gt;(new ListAlphabet&lt;Symbol&gt;(new ArrayList&lt;&gt;(symbols)));</span>
+<span class="fc" id="L44">        DFAs.complete(decodedDfa, inputCompleteDfa.getInputAlphabet(), inputCompleteDfa);</span>
+<span class="fc" id="L45">        DFAAdapter dfaAdapter = new DFAAdapter(decodedDfa, decodedDfa.getInputAlphabet());</span>
+<span class="fc" id="L46">        return dfaAdapter.minimize();</span>
+    }
+
+    private &lt;S&gt; FastDFA&lt;Symbol&gt; decode(DeterministicAcceptorTS&lt;S, Label&gt; encodedTs, Collection&lt;Label&gt; labels, Collection&lt;Symbol&gt; symbols) {
+<span class="fc" id="L50">        Alphabet&lt;Symbol&gt; alphabet = new ListAlphabet&lt;&gt;(new ArrayList&lt;&gt;(symbols));</span>
+<span class="fc" id="L51">        FastDFA&lt;Symbol&gt; decodedDfa = new FastDFA&lt;&gt;(alphabet);</span>
+<span class="fc" id="L52">        DecodingTS&lt;S&gt; decodingTS = new DecodingTS&lt;S&gt;(encodedTs, labels);</span>
+<span class="fc" id="L53">        decodingTS.setTokenMatcher(tokenMatcher);</span>
+<span class="fc" id="L54">        TSCopy.copy(TSTraversalMethod.DEPTH_FIRST, decodingTS, -1, symbols, decodedDfa);</span>
+<span class="fc" id="L55">        return decodedDfa;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractBugPattern.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.pattern</a> &gt; <span class="el_source">AbstractBugPattern.java</span></div><h1>AbstractBugPattern.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.pattern;
+
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlTransient;
+
+import se.uu.it.smbugfinder.bug.BugSeverity;
+import se.uu.it.smbugfinder.dfa.DFAAdapter;
+
+/**
+ * Abstract class for bug patterns encoded as DFAs.
+ * Like a pattern, a bug pattern has a name and a description.
+ * In addition, it is equipped with a unique index and a severity level.
+ */
+public abstract class AbstractBugPattern extends Pattern {
+<span class="fc" id="L15">    private static int CUR_ID = 1;</span>
+
+<span class="fc" id="L17">    public AbstractBugPattern() {</span>
+<span class="fc" id="L18">        id = CUR_ID ++;</span>
+<span class="fc" id="L19">    }</span>
+
+    protected AbstractBugPattern(String name, String description, BugSeverity severity) {
+<span class="nc" id="L22">        this();</span>
+<span class="nc" id="L23">        this.name = name;</span>
+<span class="nc" id="L24">        this.description = description;</span>
+<span class="nc" id="L25">        this.severity = severity;</span>
+<span class="nc" id="L26">    }</span>
+
+    @XmlTransient
+    private int id;
+
+    @XmlElement(name = &quot;severity&quot;, required = false)
+    private BugSeverity severity;
+
+    @XmlTransient
+    private DFAAdapter bugLanguage;
+
+    /**
+     * Generates the bug language described by this bug pattern.
+     * On first call, it stores the generated language to a variable, allowing for subsequent calls to simply return the variable.
+     */
+    public DFAAdapter generateBugLanguage() {
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (bugLanguage == null) {</span>
+<span class="fc" id="L43">            bugLanguage = doGenerateBugLanguage();</span>
+        }
+<span class="fc" id="L45">        return bugLanguage;</span>
+    }
+
+    abstract DFAAdapter doGenerateBugLanguage();
+
+    public Integer getId() {
+<span class="fc" id="L51">        return id;</span>
+    }
+
+    public BugSeverity getSeverity() {
+<span class="fc" id="L55">        return severity;</span>
+    }
+
+    void setSeverity(BugSeverity severity) {
+<span class="fc" id="L59">        this.severity = severity;</span>
+<span class="fc" id="L60">    }</span>
+
+    public abstract boolean isGeneral();
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MealyToDFAConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.dfa</a> &gt; <span class="el_source">MealyToDFAConverter.java</span></div><h1>MealyToDFAConverter.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.dfa;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import net.automatalib.alphabet.Alphabet;
+import net.automatalib.alphabet.impl.ListAlphabet;
+import net.automatalib.automaton.fsa.MutableDFA;
+import net.automatalib.automaton.fsa.impl.FastDFA;
+import net.automatalib.automaton.fsa.impl.FastDFAState;
+import net.automatalib.automaton.transducer.MealyMachine;
+import net.automatalib.common.util.Pair;
+import net.automatalib.common.util.mapping.Mapping;
+import se.uu.it.smbugfinder.utils.DFAUtils;
+import se.uu.it.smbugfinder.utils.MealyUtils;
+
+public class MealyToDFAConverter&lt;I,O&gt; {
+
+    private DFAPostProcessor&lt;I,O&gt; dfaPostProcessor;
+
+<span class="nc" id="L26">    public MealyToDFAConverter(DFAPostProcessor&lt;I,O&gt; dfaPostProcessor) {</span>
+<span class="nc" id="L27">        this.dfaPostProcessor = dfaPostProcessor;</span>
+<span class="nc" id="L28">    }</span>
+
+<span class="fc" id="L30">    public MealyToDFAConverter() {</span>
+<span class="fc" id="L31">        this.dfaPostProcessor = new DFAPostProcessor&lt;I, O&gt;() {</span>
+            @Override
+            public &lt;DS, S&gt; void process(MutableDFA&lt;DS, Symbol&gt; dfa, MealyMachine&lt;S, I, ?, O&gt; mealy, Collection&lt;I&gt; inputs,
+                    SymbolMapping&lt;I, O&gt; mapping) {
+<span class="fc" id="L35">            }</span>
+        };
+<span class="fc" id="L37">    }</span>
+
+    public &lt;S&gt; DFAAdapter convert(MealyMachine&lt;S, I, ?, O&gt; mealy,
+            Collection&lt;I&gt; inputs, SymbolMapping&lt;I,O&gt; mapping) {
+<span class="fc" id="L41">        Set&lt;O&gt; outputs = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L42">        MealyUtils.reachableOutputs(mealy, inputs, outputs);</span>
+
+<span class="fc" id="L44">        Mapping&lt;I, Symbol&gt; inputMapping = i -&gt; mapping.fromInput(i);</span>
+
+<span class="fc" id="L46">        Mapping&lt;Pair&lt;S, O&gt;, List&lt;Symbol&gt;&gt; outputMapping = pair -&gt; {</span>
+<span class="fc" id="L47">            return new ArrayList&lt;Symbol&gt;(mapping.fromOutput(pair.getSecond()));</span>
+        };
+
+<span class="fc" id="L50">        Set&lt;Symbol&gt; symbols = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L51">        mapping.fromInputs(inputs, symbols);</span>
+<span class="fc" id="L52">        mapping.fromOutputs(outputs, symbols);</span>
+<span class="fc" id="L53">        Alphabet&lt;Symbol&gt; alphabet = new ListAlphabet&lt;&gt;(new ArrayList&lt;&gt;(symbols));</span>
+<span class="fc" id="L54">        FastDFA&lt;Symbol&gt; dfa = new FastDFA&lt;&gt;(alphabet);</span>
+
+<span class="fc" id="L56">        DFAUtils.convertMealyToDFA(mealy, inputs, symbols, inputMapping, outputMapping, new LinkedHashMap&lt;&gt;(), dfa);</span>
+
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        List&lt;FastDFAState&gt; rejecting = dfa.getStates().stream().filter(s -&gt; !s.isAccepting()).collect(Collectors.toList());</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        if (rejecting.size() != 1) {</span>
+<span class="nc" id="L60">            throw new InternalError(&quot;The DFA generated from the learned model is expected to have only one rejecting state&quot;);</span>
+        }
+
+<span class="fc" id="L63">        dfaPostProcessor.process(dfa, mealy, inputs, mapping);</span>
+
+<span class="fc" id="L65">        return new DFAAdapter(dfa, symbols).complete().minimize();</span>
+    }
+
+    public static interface DFAPostProcessor&lt;I,O&gt; {
+        &lt;DS, S&gt; void process(MutableDFA&lt;DS, Symbol&gt; dfa, MealyMachine&lt;S, I, ?, O&gt; mealy,
+                Collection&lt;I&gt; inputs, SymbolMapping&lt;I,O&gt; mapping);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

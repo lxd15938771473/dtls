@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DFAExporter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder</a> &gt; <span class="el_source">DFAExporter.java</span></div><h1>DFAExporter.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import se.uu.it.smbugfinder.dfa.DFAAdapter;
+
+public interface DFAExporter {
+<span class="nc" id="L17">    static final Logger LOGGER = LoggerFactory.getLogger(DFAExporter.class);</span>
+
+    public void exportDfa(DFAAdapter spec, String name);
+
+    public static class DirectoryDFAExporter implements DFAExporter {
+        private String outputDir;
+
+<span class="nc" id="L24">        public DirectoryDFAExporter(String outputDir) {</span>
+<span class="nc" id="L25">            this.outputDir = outputDir;</span>
+<span class="nc" id="L26">        }</span>
+
+        @Override
+        public void exportDfa(DFAAdapter spec, String name) {
+            try {
+<span class="nc" id="L31">                spec.export(new FileWriter(new File(outputDir, name), StandardCharsets.UTF_8));</span>
+<span class="nc" id="L32">            } catch (IOException e) {</span>
+<span class="nc" id="L33">                LOGGER.error(&quot;Could not export {}&quot;, name);</span>
+<span class="nc" id="L34">                LOGGER.error(e.getLocalizedMessage());</span>
+<span class="nc" id="L35">            }</span>
+<span class="nc" id="L36">        }</span>
+    }
+
+    public static class StreamDFAExporter implements DFAExporter {
+        private PrintWriter writer;
+
+<span class="nc" id="L42">        public StreamDFAExporter(OutputStream out) {</span>
+<span class="nc" id="L43">            this.writer = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));</span>
+<span class="nc" id="L44">        }</span>
+
+        @Override
+        public void exportDfa(DFAAdapter spec, String name) {
+
+<span class="nc" id="L49">            writer.println(&quot;============&quot;);</span>
+<span class="nc" id="L50">            writer.println(&quot;&quot;);</span>
+<span class="nc" id="L51">            writer.println(&quot;DFA &quot; + name);</span>
+<span class="nc" id="L52">            writer.println(&quot;&quot;);</span>
+<span class="nc" id="L53">            writer.println(&quot;============&quot;);</span>
+            try {
+<span class="nc" id="L55">                spec.export(writer);</span>
+<span class="nc" id="L56">            } catch (IOException e) {</span>
+<span class="nc" id="L57">                writer.println(&quot;Failure exporting model&quot;);</span>
+<span class="nc" id="L58">            }</span>
+<span class="nc" id="L59">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

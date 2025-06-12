@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EncodedDFA.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.encoding</a> &gt; <span class="el_source">EncodedDFA.java</span></div><h1>EncodedDFA.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.encoding;
+
+import java.util.Collection;
+
+import net.automatalib.automaton.fsa.DFA;
+import net.automatalib.util.ts.copy.TSCopy;
+
+
+public class EncodedDFA implements EncodedTS {
+    /**
+     * We use a DFA representation (instead of a graph) in order to leverage existing functionality for traversing transition systems which we use to decode the DFA.
+     * e.g.  {@link TSCopy}
+     */
+    private DFA&lt;?, Label&gt; encodedDfa;
+    private Collection&lt;Label&gt; labels;
+
+    public EncodedDFA(DFA&lt;?, Label&gt; encodedDfa, Collection&lt;Label&gt; labels) {
+<span class="fc" id="L18">        super();</span>
+<span class="fc" id="L19">        this.encodedDfa = encodedDfa;</span>
+<span class="fc" id="L20">        this.labels = labels;</span>
+<span class="fc" id="L21">    }</span>
+
+    @Override
+    public DFA&lt;?, Label&gt; getEncodedTS() {
+<span class="fc" id="L25">        return encodedDfa;</span>
+    }
+
+    @Override
+    public Collection&lt;Label&gt; getLabels() {
+<span class="fc" id="L30">        return labels;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

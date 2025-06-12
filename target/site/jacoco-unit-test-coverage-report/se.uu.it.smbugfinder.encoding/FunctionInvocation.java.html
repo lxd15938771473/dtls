@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FunctionInvocation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.encoding</a> &gt; <span class="el_source">FunctionInvocation.java</span></div><h1>FunctionInvocation.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.encoding;
+
+import java.util.Arrays;
+import java.util.List;
+
+import se.uu.it.smbugfinder.dfa.Symbol;
+
+public final class FunctionInvocation implements ValueExpression {
+    private ValueExpression[] parameters;
+    private Function function;
+
+<span class="fc" id="L12">    public FunctionInvocation(Function function, ValueExpression ... parameters) {</span>
+<span class="fc" id="L13">        this.function = function;</span>
+<span class="fc" id="L14">        this.parameters = parameters;</span>
+<span class="pc bpc" id="L15" title="1 of 2 branches missed.">        if (function.getNumArgs() != parameters.length) {</span>
+<span class="nc" id="L16">            throw new RuntimeDecodingException(&quot;Invalid number of parameters in function invocation&quot;);</span>
+        }
+<span class="fc" id="L18">    }</span>
+
+    public FunctionInvocation(Function function, List&lt;ValueExpression&gt; parameters) {
+<span class="fc" id="L21">        this(function, parameters.toArray(new ValueExpression[parameters.size()]));</span>
+<span class="fc" id="L22">    }</span>
+
+    @Override
+    public Value eval(Symbol symbol, Valuation valuation) {
+<span class="fc" id="L26">        Value [] args = new Value [parameters.length];</span>
+
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        for (int i=0; i&lt; parameters.length; i++) {</span>
+<span class="fc" id="L29">            args[i] = parameters[i].eval(symbol, valuation);</span>
+        }
+
+<span class="fc" id="L32">        Value result = function.invoke(symbol, args);</span>
+
+<span class="fc" id="L34">        return result;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L39">        StringBuilder builder = new StringBuilder();</span>
+<span class="nc" id="L40">        builder.append(function.getName());</span>
+<span class="nc" id="L41">        builder.append(&quot;(&quot;);</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        if (parameters.length &gt; 0) {</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">            for (ValueExpression exp : parameters) {</span>
+<span class="nc" id="L44">                builder.append(exp.toString()).append(&quot;,&quot;);</span>
+            }
+<span class="nc" id="L46">            builder.deleteCharAt(builder.length()-1);</span>
+        }
+<span class="nc" id="L48">        builder.append(&quot;)&quot;);</span>
+<span class="nc" id="L49">        return builder.toString();</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L54">        final int prime = 31;</span>
+<span class="fc" id="L55">        int result = 1;</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        result = prime * result + ((function == null) ? 0 : function.hashCode());</span>
+<span class="fc" id="L57">        result = prime * result + Arrays.hashCode(parameters);</span>
+<span class="fc" id="L58">        return result;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (this == obj)</span>
+<span class="nc" id="L64">            return true;</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (obj == null)</span>
+<span class="nc" id="L66">            return false;</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (! (obj instanceof FunctionInvocation other))</span>
+<span class="nc" id="L68">            return false;</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (function == null) {</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">            if (other.function != null)</span>
+<span class="nc" id="L71">                return false;</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        } else if (!function.equals(other.function))</span>
+<span class="nc" id="L73">            return false;</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (!Arrays.equals(parameters, other.parameters))</span>
+<span class="nc" id="L75">            return false;</span>
+<span class="nc" id="L76">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

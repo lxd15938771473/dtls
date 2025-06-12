@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StateMachineBugFinderConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder</a> &gt; <span class="el_source">StateMachineBugFinderConfig.java</span></div><h1>StateMachineBugFinderConfig.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder;
+
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParametersDelegate;
+
+public class StateMachineBugFinderConfig {
+
+    @Parameter(names = {&quot;-m&quot;, &quot;-model&quot;}, required = true, description = &quot;Mealy machine of the SUT in DOT format with which bug detection is performed.&quot;)
+    private String model;
+
+    @Parameter(names = {&quot;-c&quot;, &quot;-catalogue&quot;}, required = true, description = &quot;XML file which catalogues DFA-encoded bug patterns, expressed in DOT format.&quot;)
+    private String patterns;
+
+    @Parameter(names = {&quot;-ha&quot;, &quot;-harnessAddress&quot;}, required = false, description = &quot;Listening address of the test harness used to validate bugs. &quot;
+            + &quot;The harness should be able to apply inputs on the SUT, retrieve its outputs and reset it.&quot;)
+    private String harnessAddress;
+
+    @Parameter(names = {&quot;-vm&quot;, &quot;-validationModel&quot;}, required = false, description = &quot;Mealy machine in DOT format used to simulate a SUT.&quot;)
+    private String validationModel;
+
+<span class="fc" id="L21">    @Parameter(names = {&quot;-os&quot;, &quot;-outputSeparator&quot;}, required = false, description = &quot;Separator used to split compound outputs into atomic outputs.&quot;)</span>
+    private String separator = &quot;+&quot;;
+
+<span class="fc" id="L24">    @Parameter(names = {&quot;-eo&quot;, &quot;-emptyOutput&quot;}, required = false, description = &quot;String corresponding to the empty output.&quot;</span>
+            + &quot;An empty output is mapped to an empty set of DFA symbols. &quot;)
+    private String emptyOutput = &quot;TIMEOUT&quot;;
+
+<span class="fc" id="L28">    @Parameter(names = {&quot;-od&quot;, &quot;-outputDir&quot;}, required = false, description = &quot;Directory to export DFA models, statistics and the bug report to.&quot;)</span>
+    private String outputDir = &quot;output&quot;;
+
+<span class="fc" id="L31">    @Parameter(names = {&quot;-rm&quot;, &quot;-resetMessage&quot;}, required = false, description = &quot;Message to send to the test harness in order to reset the SUT.&quot;)</span>
+    private String resetMessage = &quot;reset&quot;;
+
+<span class="fc" id="L34">    @Parameter(names = {&quot;-rcm&quot;, &quot;-resetConfirmationMessage&quot;}, required = false, description = &quot;Confirmation message to read from the test harness after resetting the SUT. &quot;</span>
+            + &quot;If unset, no confirmation message is read.&quot;)
+    private String resetConfirmationMessage = null;
+
+    @ParametersDelegate
+    private StateMachineBugFinderCoreConfig smBugFinderConfig;
+
+<span class="fc" id="L41">    public StateMachineBugFinderConfig() {</span>
+<span class="fc" id="L42">        smBugFinderConfig = new StateMachineBugFinderCoreConfig();</span>
+<span class="fc" id="L43">    }</span>
+
+    public String getModel() {
+<span class="fc" id="L46">        return model;</span>
+    }
+
+    public String getHarnessAddress() {
+<span class="fc" id="L50">        return harnessAddress;</span>
+    }
+
+    public String getValidationModel() {
+<span class="fc" id="L54">        return validationModel;</span>
+    }
+
+    public String getSeparator() {
+<span class="fc" id="L58">        return separator;</span>
+    }
+
+    public String getEmptyOutput() {
+<span class="fc" id="L62">        return emptyOutput;</span>
+    }
+
+    public StateMachineBugFinderCoreConfig getSmBugFinderConfig() {
+<span class="fc" id="L66">        return smBugFinderConfig;</span>
+    }
+
+    public String getPatterns() {
+<span class="fc" id="L70">        return patterns;</span>
+    }
+
+    public String getOutputDir() {
+<span class="nc" id="L74">        return outputDir;</span>
+    }
+
+    public String getResetMessage() {
+<span class="nc" id="L78">        return resetMessage;</span>
+    }
+
+    public String getResetConfirmationMessage() {
+<span class="nc" id="L82">        return resetConfirmationMessage;</span>
+    }
+
+    public void setModel(String model) {
+<span class="fc" id="L86">        this.model = model;</span>
+<span class="fc" id="L87">    }</span>
+
+    public void setValidationModel(String validationModel) {
+<span class="fc" id="L90">        this.validationModel = validationModel;</span>
+<span class="fc" id="L91">    }</span>
+
+    public void setSeparator(String separator) {
+<span class="fc" id="L94">        this.separator = separator;</span>
+<span class="fc" id="L95">    }</span>
+
+    public void setEmptyOutput(String emptyOutput) {
+<span class="fc" id="L98">        this.emptyOutput = emptyOutput;</span>
+<span class="fc" id="L99">    }</span>
+
+    public void setPatterns(String patterns) {
+<span class="fc" id="L102">        this.patterns = patterns;</span>
+<span class="fc" id="L103">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

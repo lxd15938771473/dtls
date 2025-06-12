@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BugPatterns.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.pattern</a> &gt; <span class="el_source">BugPatterns.java</span></div><h1>BugPatterns.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.pattern;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElements;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
+
+import se.uu.it.smbugfinder.bug.BugSeverity;
+import se.uu.it.smbugfinder.dfa.DFAAdapter;
+
+@XmlRootElement(name = &quot;bugPatterns&quot;)
+public class BugPatterns {
+
+    @XmlElement(name = &quot;specificationLanguage&quot;, required = false)
+    private String specificationLanguagePath;
+
+    @XmlTransient
+    private DFAAdapter specificationLanguage;
+
+    @XmlElements(value = {
+            @XmlElement(type = BugPattern.class, name = &quot;bugPattern&quot;),
+            @XmlElement(type = GeneralBugPattern.class, name = &quot;generalBugPattern&quot;)
+            })
+    private List&lt;BugPattern&gt; bugPatterns;
+
+    @XmlElement(name = &quot;defaultBugSeverity&quot;)
+    private BugSeverity defaultBugSeverity;
+
+    @XmlElement(name = &quot;defaultEnabled&quot;)
+    private boolean defaultEnabled;
+
+<span class="fc" id="L37">    BugPatterns() {</span>
+<span class="fc" id="L38">        bugPatterns = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L39">        defaultBugSeverity = BugSeverity.UNKNOWN;</span>
+<span class="fc" id="L40">        defaultEnabled = true;</span>
+<span class="fc" id="L41">    }</span>
+
+
+    /**
+     * Initializes bug patterns according to the default values of this container and removes disabled bug patterns.
+     * Should be called before bug patterns are accessed.
+     */
+    void prepare() {
+<span class="fc" id="L49">        updateDefaults();</span>
+<span class="fc" id="L50">        removeDisabled();</span>
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Adjusts the contained bug patterns according to the default values of this container.
+     */
+    private void updateDefaults() {
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        for (BugPattern bugPattern : bugPatterns) {</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">            if (bugPattern.getEnabled() == null) {</span>
+<span class="fc" id="L59">                bugPattern.setEnabled(defaultEnabled);</span>
+            }
+<span class="fc bfc" id="L61" title="All 2 branches covered.">            if (bugPattern.getSeverity() == null) {</span>
+<span class="fc" id="L62">                bugPattern.setSeverity(defaultBugSeverity);</span>
+            }
+<span class="fc" id="L64">        }</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * Removes bug patterns that have not been enabled
+     */
+    private void removeDisabled() {
+<span class="fc" id="L71">        List&lt;BugPattern&gt; bugPatterns = new ArrayList&lt;BugPattern&gt;(this.bugPatterns);</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        bugPatterns.removeIf(bp -&gt; !bp.isEnabled());</span>
+<span class="fc" id="L73">        this.bugPatterns = bugPatterns;</span>
+<span class="fc" id="L74">    }</span>
+
+    /**
+     * Removes bug patterns for which the selector returns false.
+     */
+    public void applySelector(Predicate&lt;BugPattern&gt; selector) {
+<span class="nc" id="L80">        List&lt;BugPattern&gt; bugPatterns = new ArrayList&lt;BugPattern&gt;(this.bugPatterns);</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        bugPatterns.removeIf(bp -&gt; !selector.test(bp));</span>
+<span class="nc" id="L82">        this.bugPatterns = bugPatterns;</span>
+<span class="nc" id="L83">    }</span>
+
+    /**
+     * Returns the bug pattern with a matching name, or null if no such bug pattern could be found.
+     */
+    public BugPattern getBugPattern(String name) {
+<span class="nc" id="L89">        return bugPatterns.stream().filter(bp -&gt; bp.getName().equals(name)).findAny().orElse(null);</span>
+    }
+
+    public String getSpecificationLanguagePath() {
+<span class="fc" id="L93">        return specificationLanguagePath;</span>
+    }
+
+    public DFAAdapter getSpecificationLanguage() {
+<span class="fc" id="L97">        return specificationLanguage;</span>
+    }
+
+    void setSpecificationLanguage(DFAAdapter specificationLanguage) {
+<span class="nc" id="L101">        this.specificationLanguage = specificationLanguage;</span>
+<span class="nc" id="L102">    }</span>
+
+    public List&lt;BugPattern&gt; getBugPatterns() {
+<span class="fc" id="L105">        return bugPatterns;</span>
+    }
+
+    public List&lt;BugPattern&gt; getSpecificBugPatterns() {
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        return bugPatterns.stream().filter(bp -&gt; !bp.isGeneral()).collect(Collectors.toList());</span>
+    }
+
+    public List&lt;GeneralBugPattern&gt; getGeneralBugPatterns() {
+<span class="fc" id="L113">        return bugPatterns.stream().filter(bp -&gt; bp.isGeneral()).map(bp -&gt; (GeneralBugPattern) bp).collect(Collectors.toList());</span>
+    }
+
+    public List&lt;BugPattern&gt; getBugPatterns(Predicate&lt;BugPattern&gt; filter) {
+<span class="nc" id="L117">        return bugPatterns.stream().filter(filter).collect(Collectors.toList());</span>
+    }
+
+    public BugSeverity getDefaultBugSeverity() {
+<span class="nc" id="L121">        return defaultBugSeverity;</span>
+    }
+
+    public boolean isDefaultEnabled() {
+<span class="nc" id="L125">        return defaultEnabled;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

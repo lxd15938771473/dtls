@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="se.uu.it.smbugfinder.bugfinding.EdhocBugFindingTest" time="0.323" tests="9" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="24"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/lixiangdong/Downloads/state-machine-bug-finder/target/test-classes:/Users/lixiangdong/Downloads/state-machine-bug-finder/target/classes:/Users/lixiangdong/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar:/Users/lixiangdong/.m2/repository/org/checkerframework/checker-qual/3.49.4/checker-qual-3.49.4.jar:/Users/lixiangdong/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.2/jakarta.xml.bind-api-4.0.2.jar:/Users/lixiangdong/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.3/jakarta.activation-api-2.1.3.jar:/Users/lixiangdong/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.5/jaxb-runtime-4.0.5.jar:/Users/lixiangdong/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.5/jaxb-core-4.0.5.jar:/Users/lixiangdong/.m2/repository/org/eclipse/angus/angus-activation/2.0.2/angus-activation-2.0.2.jar:/Users/lixiangdong/.m2/repository/org/glassfish/jaxb/txw2/4.0.5/txw2-4.0.5.jar:/Users/lixiangdong/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/Users/lixiangdong/.m2/repository/ch/qos/logback/logback-core/1.5.18/logback-core-1.5.18.jar:/Users/lixiangdong/.m2/repository/ch/qos/logback/logback-classic/1.5.18/logback-classic-1.5.18.jar:/Users/lixiangdong/.m2/repository/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-api/0.12.1/automata-api-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-commons-settings/0.12.1/automata-commons-settings-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-commons-smartcollections/0.12.1/automata-commons-smartcollections-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-commons-util/0.12.1/automata-commons-util-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-core/0.12.1/automata-core-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-serialization-dot/0.12.1/automata-serialization-dot-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-util/0.12.1/automata-util-0.12.1.jar:/Users/lixiangdong/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/Users/lixiangdong/.m2/repository/com/google/guava/guava/33.4.8-jre/guava-33.4.8-jre.jar:/Users/lixiangdong/.m2/repository/com/google/guava/failureaccess/1.0.3/failureaccess-1.0.3.jar:/Users/lixiangdong/.m2/repository/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:/Users/lixiangdong/.m2/repository/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar:/Users/lixiangdong/.m2/repository/com/google/errorprone/error_prone_annotations/2.36.0/error_prone_annotations-2.36.0.jar:/Users/lixiangdong/.m2/repository/com/google/j2objc/j2objc-annotations/3.0.0/j2objc-annotations-3.0.0.jar:/Users/lixiangdong/.m2/repository/com/beust/jcommander/1.82/jcommander-1.82.jar:/Users/lixiangdong/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/Users/lixiangdong/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/Users/lixiangdong/.m2/repository/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar:"/>
+    <property name="java.vm.vendor" value="Homebrew"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://github.com/Homebrew/homebrew-core/issues"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="java.vm.specification.version" value="24"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="CN"/>
+    <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk/24.0.1/libexec/openjdk.jdk/Contents/Home/lib"/>
+    <property name="sun.java.command" value="/Users/lixiangdong/Downloads/state-machine-bug-finder/target/surefire/surefirebooter-20250610163543839_3.jar /Users/lixiangdong/Downloads/state-machine-bug-finder/target/surefire 2025-06-10T16-35-43_331-jvmRun1 surefire-20250610163543839_1tmp surefire_0-20250610163543839_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/Users/lixiangdong/Downloads/state-machine-bug-finder/target/test-classes:/Users/lixiangdong/Downloads/state-machine-bug-finder/target/classes:/Users/lixiangdong/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar:/Users/lixiangdong/.m2/repository/org/checkerframework/checker-qual/3.49.4/checker-qual-3.49.4.jar:/Users/lixiangdong/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.2/jakarta.xml.bind-api-4.0.2.jar:/Users/lixiangdong/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.3/jakarta.activation-api-2.1.3.jar:/Users/lixiangdong/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.5/jaxb-runtime-4.0.5.jar:/Users/lixiangdong/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.5/jaxb-core-4.0.5.jar:/Users/lixiangdong/.m2/repository/org/eclipse/angus/angus-activation/2.0.2/angus-activation-2.0.2.jar:/Users/lixiangdong/.m2/repository/org/glassfish/jaxb/txw2/4.0.5/txw2-4.0.5.jar:/Users/lixiangdong/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/Users/lixiangdong/.m2/repository/ch/qos/logback/logback-core/1.5.18/logback-core-1.5.18.jar:/Users/lixiangdong/.m2/repository/ch/qos/logback/logback-classic/1.5.18/logback-classic-1.5.18.jar:/Users/lixiangdong/.m2/repository/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-api/0.12.1/automata-api-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-commons-settings/0.12.1/automata-commons-settings-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-commons-smartcollections/0.12.1/automata-commons-smartcollections-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-commons-util/0.12.1/automata-commons-util-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-core/0.12.1/automata-core-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-serialization-dot/0.12.1/automata-serialization-dot-0.12.1.jar:/Users/lixiangdong/.m2/repository/net/automatalib/automata-util/0.12.1/automata-util-0.12.1.jar:/Users/lixiangdong/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/Users/lixiangdong/.m2/repository/com/google/guava/guava/33.4.8-jre/guava-33.4.8-jre.jar:/Users/lixiangdong/.m2/repository/com/google/guava/failureaccess/1.0.3/failureaccess-1.0.3.jar:/Users/lixiangdong/.m2/repository/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:/Users/lixiangdong/.m2/repository/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar:/Users/lixiangdong/.m2/repository/com/google/errorprone/error_prone_annotations/2.36.0/error_prone_annotations-2.36.0.jar:/Users/lixiangdong/.m2/repository/com/google/j2objc/j2objc-annotations/3.0.0/j2objc-annotations-3.0.0.jar:/Users/lixiangdong/.m2/repository/com/beust/jcommander/1.82/jcommander-1.82.jar:/Users/lixiangdong/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/Users/lixiangdong/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/Users/lixiangdong/.m2/repository/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/lixiangdong"/>
+    <property name="user.language" value="zh"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-04-15"/>
+    <property name="java.home" value="/opt/homebrew/Cellar/openjdk/24.0.1/libexec/openjdk.jdk/Contents/Home"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/Users/lixiangdong/Downloads/state-machine-bug-finder"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="apple.awt.application.name" value="ForkedBooter"/>
+    <property name="surefire.real.class.path" value="/Users/lixiangdong/Downloads/state-machine-bug-finder/target/surefire/surefirebooter-20250610163543839_3.jar"/>
+    <property name="user.script" value="Hans"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="24.0.1"/>
+    <property name="user.name" value="lixiangdong"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="15.5"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="java.vendor.version" value="Homebrew"/>
+    <property name="localRepository" value="/Users/lixiangdong/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/Homebrew/homebrew-core/issues"/>
+    <property name="java.io.tmpdir" value="/var/folders/03/9bq21pqx3b38w226cd8k45hc0000gn/T/"/>
+    <property name="java.version" value="24.0.1"/>
+    <property name="user.dir" value="/Users/lixiangdong/Downloads/state-machine-bug-finder"/>
+    <property name="os.arch" value="aarch64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/Users/lixiangdong/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vendor" value="Homebrew"/>
+    <property name="java.vm.version" value="24.0.1"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="java.class.version" value="68.0"/>
+  </properties>
+  <testcase name="testSifisClient" classname="se.uu.it.smbugfinder.bugfinding.EdhocBugFindingTest" time="0.228">
+    <system-out><![CDATA[16:35:44.172 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.263 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_alive_after_sending_error_message.dot
+16:35:44.290 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.294 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.298 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 3 bug patterns from catalogue /patterns/edhoc/client/I_m3/patterns.xml
+16:35:44.304 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ClientAliveaftersendingEDHOCerrormessage
+16:35:44.305 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Client Alive after sending EDHOC error message is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.305 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCErrorafterexchangedeletesderivedOSCOREcontext
+16:35:44.307 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+16:35:44.309 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- sutBugLanguage not empty, finding witness
+16:35:44.319 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Found witness Trace: EDHOC_MESSAGE_2/EDHOC_MESSAGE_3 COAP_EMPTY_MESSAGE/OSCORE_APP_MESSAGE EDHOC_MESSAGE_2/TIMEOUT EDHOC_MESSAGE_1/UNSUPPORTED_MESSAGE EDHOC_MESSAGE_2/UNSUPPORTED_MESSAGE EDHOC_MESSAGE_3/UNSUPPORTED_MESSAGE EDHOC_MESSAGE_4/UNSUPPORTED_MESSAGE EDHOC_ERROR_MESSAGE/UNSUPPORTED_MESSAGE EDHOC_MESSAGE_3_OSCORE_APP/UNSUPPORTED_MESSAGE OSCORE_APP_MESSAGE/UNSUPPORTED_MESSAGE COAP_APP_MESSAGE/UNSUPPORTED_MESSAGE COAP_EMPTY_MESSAGE/UNSUPPORTED_MESSAGE 
+16:35:44.322 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.323 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_alive_after_sending_error_message.dot
+16:35:44.324 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/I_without_m4_appo.dot
+16:35:44.325 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.326 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.328 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 4 bug patterns from catalogue /patterns/edhoc/client/I_m4/patterns.xml
+16:35:44.330 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ClientAliveaftersendingEDHOCERR
+16:35:44.330 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Client Alive after sending EDHOC ERR is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.331 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern InitiatorcompletesEDHOCwithoutM4orAPPo
+16:35:44.331 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- sutBugLanguage not empty, finding witness
+16:35:44.332 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Found witness Trace: EDHOC_MESSAGE_2/EDHOC_MESSAGE_3 COAP_EMPTY_MESSAGE/OSCORE_APP_MESSAGE 
+16:35:44.332 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCERRafterexchangedeletesderivedOSCOREcontext
+16:35:44.332 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+16:35:44.334 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- sutBugLanguage not empty, finding witness
+16:35:44.335 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Found witness Trace: EDHOC_MESSAGE_2/EDHOC_MESSAGE_3 COAP_EMPTY_MESSAGE/OSCORE_APP_MESSAGE EDHOC_MESSAGE_2/TIMEOUT EDHOC_MESSAGE_1/UNSUPPORTED_MESSAGE EDHOC_MESSAGE_2/UNSUPPORTED_MESSAGE EDHOC_MESSAGE_3/UNSUPPORTED_MESSAGE EDHOC_MESSAGE_4/UNSUPPORTED_MESSAGE EDHOC_ERROR_MESSAGE/UNSUPPORTED_MESSAGE EDHOC_MESSAGE_3_OSCORE_APP/UNSUPPORTED_MESSAGE OSCORE_APP_MESSAGE/UNSUPPORTED_MESSAGE COAP_APP_MESSAGE/UNSUPPORTED_MESSAGE COAP_EMPTY_MESSAGE/UNSUPPORTED_MESSAGE 
+]]></system-out>
+  </testcase>
+  <testcase name="testSifisServer" classname="se.uu.it.smbugfinder.bugfinding.EdhocBugFindingTest" time="0.013">
+    <system-out><![CDATA[16:35:44.336 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.337 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_oscore_exchange_and_force_terminate.dot
+16:35:44.338 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_respond_to_coap_app.dot
+16:35:44.339 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/R_accept_consecutive_m3.dot
+16:35:44.340 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/R_ignore_edhoc_error.dot
+16:35:44.342 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.343 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.344 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 6 bug patterns from catalogue /patterns/edhoc/server/R_m4/patterns.xml
+16:35:44.346 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ServerSuccessfulOSCOREexchangeandthenforcedtoterminate
+16:35:44.346 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Server Successful OSCORE exchange and then forced to terminate is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.347 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ServerRespondtoCoAPappmessages
+16:35:44.348 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ResponderAcceptconsecutivemessage3
+16:35:44.348 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ResponderIgnoreEDHOCerrorduringexchange
+16:35:44.349 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCErrorafterexchangedeletesderivedOSCOREcontext
+16:35:44.350 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- sutBugLanguage not empty, finding witness
+16:35:44.351 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Found witness Trace: EDHOC_MESSAGE_1/EDHOC_MESSAGE_2 EDHOC_MESSAGE_3/COAP_EMPTY_MESSAGE OSCORE_APP_MESSAGE/OSCORE_APP_MESSAGE EDHOC_ERROR_MESSAGE/COAP_EMPTY_MESSAGE OSCORE_APP_MESSAGE/COAP_ERROR_MESSAGE 
+16:35:44.351 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+16:35:44.351 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Unsupported sink state is an empty language when considering only the input/output labels from the SUT model. 
+]]></system-out>
+  </testcase>
+  <testcase name="testLakersClient" classname="se.uu.it.smbugfinder.bugfinding.EdhocBugFindingTest" time="0.011">
+    <system-out><![CDATA[16:35:44.352 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.353 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_alive_after_sending_error_message.dot
+16:35:44.353 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.354 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.356 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 3 bug patterns from catalogue /patterns/edhoc/client/I_m3/patterns.xml
+16:35:44.357 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ClientAliveaftersendingEDHOCerrormessage
+16:35:44.357 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Client Alive after sending EDHOC error message is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.357 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCErrorafterexchangedeletesderivedOSCOREcontext
+16:35:44.357 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern EDHOC Error after exchange deletes derived OSCORE context is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.357 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+16:35:44.358 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.358 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_alive_after_sending_error_message.dot
+16:35:44.359 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/I_without_m4_appo.dot
+16:35:44.359 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.360 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.361 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 4 bug patterns from catalogue /patterns/edhoc/client/I_m4/patterns.xml
+16:35:44.362 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ClientAliveaftersendingEDHOCERR
+16:35:44.362 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Client Alive after sending EDHOC ERR is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.362 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern InitiatorcompletesEDHOCwithoutM4orAPPo
+16:35:44.362 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Initiator completes EDHOC without M4 or APPo is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.362 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCERRafterexchangedeletesderivedOSCOREcontext
+16:35:44.362 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern EDHOC ERR after exchange deletes derived OSCORE context is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.362 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+]]></system-out>
+  </testcase>
+  <testcase name="testUoscoreClient" classname="se.uu.it.smbugfinder.bugfinding.EdhocBugFindingTest" time="0.013">
+    <system-out><![CDATA[16:35:44.363 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.364 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_alive_after_sending_error_message.dot
+16:35:44.364 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.365 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.367 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 3 bug patterns from catalogue /patterns/edhoc/client/I_m3/patterns.xml
+16:35:44.368 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ClientAliveaftersendingEDHOCerrormessage
+16:35:44.368 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Client Alive after sending EDHOC error message is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.368 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCErrorafterexchangedeletesderivedOSCOREcontext
+16:35:44.368 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+16:35:44.369 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.370 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_alive_after_sending_error_message.dot
+16:35:44.371 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/I_without_m4_appo.dot
+16:35:44.371 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.372 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.373 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 4 bug patterns from catalogue /patterns/edhoc/client/I_m4/patterns.xml
+16:35:44.374 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ClientAliveaftersendingEDHOCERR
+16:35:44.374 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Client Alive after sending EDHOC ERR is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.374 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern InitiatorcompletesEDHOCwithoutM4orAPPo
+16:35:44.375 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- sutBugLanguage not empty, finding witness
+16:35:44.375 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Found witness Trace: EDHOC_MESSAGE_2/EDHOC_MESSAGE_3 EDHOC_MESSAGE_2/OSCORE_APP_MESSAGE 
+16:35:44.375 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCERRafterexchangedeletesderivedOSCOREcontext
+16:35:44.375 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+]]></system-out>
+  </testcase>
+  <testcase name="testLakersServer" classname="se.uu.it.smbugfinder.bugfinding.EdhocBugFindingTest" time="0.007">
+    <system-out><![CDATA[16:35:44.376 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.377 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_oscore_exchange_and_force_terminate.dot
+16:35:44.378 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_respond_to_coap_app.dot
+16:35:44.378 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/R_accept_consecutive_m3.dot
+16:35:44.379 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/R_ignore_edhoc_error.dot
+16:35:44.380 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.380 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.381 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 6 bug patterns from catalogue /patterns/edhoc/server/R_m4/patterns.xml
+16:35:44.381 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ServerSuccessfulOSCOREexchangeandthenforcedtoterminate
+16:35:44.381 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Server Successful OSCORE exchange and then forced to terminate is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.382 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ServerRespondtoCoAPappmessages
+16:35:44.382 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ResponderAcceptconsecutivemessage3
+16:35:44.382 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ResponderIgnoreEDHOCerrorduringexchange
+16:35:44.382 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCErrorafterexchangedeletesderivedOSCOREcontext
+16:35:44.382 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern EDHOC Error after exchange deletes derived OSCORE context is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.382 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+16:35:44.382 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Unsupported sink state is an empty language when considering only the input/output labels from the SUT model. 
+]]></system-out>
+  </testcase>
+  <testcase name="testUoscoreServer" classname="se.uu.it.smbugfinder.bugfinding.EdhocBugFindingTest" time="0.008">
+    <system-out><![CDATA[16:35:44.383 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.384 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_oscore_exchange_and_force_terminate.dot
+16:35:44.384 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_respond_to_coap_app.dot
+16:35:44.385 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/R_accept_consecutive_m3.dot
+16:35:44.386 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/R_ignore_edhoc_error.dot
+16:35:44.386 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.387 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.388 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 6 bug patterns from catalogue /patterns/edhoc/server/R_m4/patterns.xml
+16:35:44.388 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ServerSuccessfulOSCOREexchangeandthenforcedtoterminate
+16:35:44.389 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ServerRespondtoCoAPappmessages
+16:35:44.389 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- sutBugLanguage not empty, finding witness
+16:35:44.389 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Found witness Trace: EDHOC_MESSAGE_1/EDHOC_MESSAGE_2 EDHOC_MESSAGE_3/TIMEOUT COAP_APP_MESSAGE/COAP_APP_MESSAGE 
+16:35:44.389 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ResponderAcceptconsecutivemessage3
+16:35:44.390 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ResponderIgnoreEDHOCerrorduringexchange
+16:35:44.390 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCErrorafterexchangedeletesderivedOSCOREcontext
+16:35:44.390 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+16:35:44.390 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Unsupported sink state is an empty language when considering only the input/output labels from the SUT model. 
+]]></system-out>
+  </testcase>
+  <testcase name="testRise_f994359_client" classname="se.uu.it.smbugfinder.bugfinding.EdhocBugFindingTest" time="0.007">
+    <system-out><![CDATA[16:35:44.391 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.392 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_alive_after_sending_error_message.dot
+16:35:44.392 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/I_without_m4_appo.dot
+16:35:44.393 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.393 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.395 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 4 bug patterns from catalogue /patterns/edhoc/client/I_m4/patterns.xml
+16:35:44.395 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ClientAliveaftersendingEDHOCERR
+16:35:44.396 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- sutBugLanguage not empty, finding witness
+16:35:44.396 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Found witness Trace: EDHOC_MESSAGE_2/EDHOC_MESSAGE_3 EDHOC_MESSAGE_2/EDHOC_ERROR_MESSAGE EDHOC_MESSAGE_2/OSCORE_APP_MESSAGE 
+16:35:44.396 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern InitiatorcompletesEDHOCwithoutM4orAPPo
+16:35:44.396 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- sutBugLanguage not empty, finding witness
+16:35:44.397 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Found witness Trace: EDHOC_MESSAGE_2/EDHOC_MESSAGE_3 EDHOC_MESSAGE_2/EDHOC_ERROR_MESSAGE EDHOC_MESSAGE_2/OSCORE_APP_MESSAGE 
+16:35:44.397 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCERRafterexchangedeletesderivedOSCOREcontext
+16:35:44.397 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+]]></system-out>
+  </testcase>
+  <testcase name="testRise_9bdb756_client" classname="se.uu.it.smbugfinder.bugfinding.EdhocBugFindingTest" time="0.006">
+    <system-out><![CDATA[16:35:44.398 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.399 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_alive_after_sending_error_message.dot
+16:35:44.400 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/I_without_m4_appo.dot
+16:35:44.400 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.400 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.401 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 4 bug patterns from catalogue /patterns/edhoc/client/I_m4/patterns.xml
+16:35:44.402 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ClientAliveaftersendingEDHOCERR
+16:35:44.402 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern InitiatorcompletesEDHOCwithoutM4orAPPo
+16:35:44.403 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCERRafterexchangedeletesderivedOSCOREcontext
+16:35:44.403 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+]]></system-out>
+  </testcase>
+  <testcase name="testRise_9bdb756_server" classname="se.uu.it.smbugfinder.bugfinding.EdhocBugFindingTest" time="0.008">
+    <system-out><![CDATA[16:35:44.404 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading bug patterns
+16:35:44.405 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_oscore_exchange_and_force_terminate.dot
+16:35:44.405 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../IR_respond_to_coap_app.dot
+16:35:44.405 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/R_accept_consecutive_m3.dot
+16:35:44.406 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/R_ignore_edhoc_error.dot
+16:35:44.407 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_edhoc_error_deletes_oscore_context.dot
+16:35:44.407 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Loading DFA at path: ../../common/IR_unsupported_sink_state.dot
+16:35:44.408 [main] INFO se.uu.it.smbugfinder.pattern.BugPatternLoader -- Successfully loaded 6 bug patterns from catalogue /patterns/edhoc/server/R_m4/patterns.xml
+16:35:44.409 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ServerSuccessfulOSCOREexchangeandthenforcedtoterminate
+16:35:44.409 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Server Successful OSCORE exchange and then forced to terminate is an empty language when considering only the input/output labels from the SUT model. 
+16:35:44.409 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ServerRespondtoCoAPappmessages
+16:35:44.409 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- sutBugLanguage not empty, finding witness
+16:35:44.410 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Found witness Trace: COAP_APP_MESSAGE/COAP_APP_MESSAGE 
+16:35:44.410 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ResponderAcceptconsecutivemessage3
+16:35:44.410 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern ResponderIgnoreEDHOCerrorduringexchange
+16:35:44.411 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern EDHOCErrorafterexchangedeletesderivedOSCOREcontext
+16:35:44.411 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- sutBugLanguage not empty, finding witness
+16:35:44.412 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Found witness Trace: EDHOC_MESSAGE_1/EDHOC_MESSAGE_2 EDHOC_MESSAGE_3/EDHOC_MESSAGE_4 OSCORE_APP_MESSAGE/OSCORE_APP_MESSAGE EDHOC_ERROR_MESSAGE/COAP_EMPTY_MESSAGE OSCORE_APP_MESSAGE/COAP_ERROR_MESSAGE 
+16:35:44.412 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- Checking bug pattern Unsupportedsinkstate
+16:35:44.412 [main] INFO se.uu.it.smbugfinder.StateMachineBugFinderCore -- The bug pattern Unsupported sink state is an empty language when considering only the input/output labels from the SUT model. 
+]]></system-out>
+  </testcase>
+</testsuite>

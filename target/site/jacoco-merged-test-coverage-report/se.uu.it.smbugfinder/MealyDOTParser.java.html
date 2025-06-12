@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MealyDOTParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder</a> &gt; <span class="el_source">MealyDOTParser.java</span></div><h1>MealyDOTParser.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import net.automatalib.automaton.AutomatonCreator;
+import net.automatalib.automaton.transducer.MutableMealyMachine;
+import net.automatalib.automaton.transducer.impl.CompactMealy;
+import net.automatalib.common.util.Pair;
+import net.automatalib.exception.FormatException;
+import net.automatalib.serialization.InputModelData;
+import net.automatalib.serialization.dot.DOTInputModelDeserializer;
+import net.automatalib.serialization.dot.DOTParsers;
+
+/**
+ * Generates a Mealy machine from a DOT specification.
+ */
+<span class="nc" id="L18">public class MealyDOTParser {</span>
+    public static &lt;S, I, O, A extends MutableMealyMachine&lt;S, I, ?, O&gt;&gt; InputModelData&lt;I, A&gt; parse(AutomatonCreator&lt;A, I&gt; creator, InputStream inputStream, MealyInputOutputProcessor &lt;I, O&gt; processor) throws IOException, FormatException {
+<span class="nc" id="L20">        DOTInputModelDeserializer&lt;S, I, A&gt; parser = DOTParsers.mealy(creator, (map)</span>
+                -&gt; {
+<span class="nc" id="L22">                    Pair&lt;String, String&gt; ioStringPair = DOTParsers.DEFAULT_MEALY_EDGE_PARSER.apply(map);</span>
+<span class="nc" id="L23">                    Pair&lt;I, O&gt; ioPair = processor.processMealyInputOutput(ioStringPair.getFirst(), ioStringPair.getSecond());</span>
+<span class="nc" id="L24">                    return ioPair;</span>
+                });
+<span class="nc" id="L26">        return parser.readModel(inputStream);</span>
+    }
+
+    public static InputModelData&lt;String, CompactMealy&lt;String, String&gt;&gt; parse(InputStream inputStream) throws IOException, FormatException {
+<span class="nc" id="L30">        return parse(new CompactMealy.Creator&lt;String, String&gt;(), inputStream, (i,o) -&gt; Pair.of(i.toString(), o.toString()));</span>
+    }
+
+    public static interface MealyInputOutputProcessor &lt;I, O&gt; {
+        Pair&lt;I, O&gt; processMealyInputOutput(String inputName, String outputName);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

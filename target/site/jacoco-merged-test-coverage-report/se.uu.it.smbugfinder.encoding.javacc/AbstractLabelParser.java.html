@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractLabelParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.encoding.javacc</a> &gt; <span class="el_source">AbstractLabelParser.java</span></div><h1>AbstractLabelParser.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.encoding.javacc;
+
+import se.uu.it.smbugfinder.encoding.Constant;
+import se.uu.it.smbugfinder.encoding.Field;
+import se.uu.it.smbugfinder.encoding.Function;
+import se.uu.it.smbugfinder.encoding.ParsingContext;
+import se.uu.it.smbugfinder.encoding.RuntimeDecodingException;
+import se.uu.it.smbugfinder.encoding.ValueExpression;
+import se.uu.it.smbugfinder.encoding.Variable;
+
+<span class="fc" id="L11">public abstract class AbstractLabelParser {</span>
+<span class="fc" id="L12">    private ParsingContext context = new ParsingContext();</span>
+
+    public void setParsingContext(ParsingContext context) {
+<span class="fc" id="L15">        this.context = context;</span>
+<span class="fc" id="L16">    }</span>
+
+    public Function resolveFunction(String identifier) {
+<span class="fc" id="L19">        Function function = this.context.getFunctions().get(identifier);</span>
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">        if (function == null) {</span>
+<span class="nc" id="L21">            throw new RuntimeDecodingException(&quot;Function &quot; + identifier + &quot; undefined. Defined functions: &quot; + context.getFunctions().keySet());</span>
+        }
+<span class="fc" id="L23">        return function;</span>
+    }
+
+    public Field resolveField(String identifier) {
+<span class="fc" id="L27">        Field field = this.context.getFields().get(identifier);</span>
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">        if (field == null) {</span>
+<span class="nc" id="L29">            throw new RuntimeDecodingException(&quot;Field &quot; + identifier + &quot; undefined. Defined fields: &quot; + context.getFields().keySet());</span>
+        }
+<span class="fc" id="L31">        return field;</span>
+    }
+
+    public Constant resolveConstant(String identifier) {
+<span class="nc" id="L35">        Constant cst = this.context.getConstants().get(identifier);</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (cst == null) {</span>
+<span class="nc" id="L37">            throw new RuntimeDecodingException(&quot;Constant &quot; + identifier + &quot; undefined. Defined constants: &quot; + context.getConstants().keySet());</span>
+        }
+<span class="nc" id="L39">        return cst;</span>
+    }
+
+    public Variable resolveVariable(String identifier) {
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        if (context.getVariables().containsKey(identifier)) {</span>
+<span class="nc" id="L44">            return context.getVariables().get(identifier);</span>
+        }
+<span class="fc" id="L46">        Variable newVar = new Variable(identifier);</span>
+<span class="fc" id="L47">        context.getVariables().put(newVar.getName(), newVar);</span>
+<span class="fc" id="L48">        return newVar;</span>
+    }
+
+    public ValueExpression resolveValueExpression(String identifier) {
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">        if (context.getFields().containsKey(identifier)) {</span>
+<span class="nc" id="L53">            return context.getFields().get(identifier);</span>
+        }
+
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (context.getConstants().containsKey(identifier)) {</span>
+<span class="nc" id="L57">            return context.getConstants().get(identifier);</span>
+        }
+
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        if (context.getVariables().containsKey(identifier)) {</span>
+<span class="fc" id="L61">            return context.getVariables().get(identifier);</span>
+        }
+
+<span class="nc" id="L64">        Variable newVar = new Variable(identifier);</span>
+<span class="nc" id="L65">        context.getVariables().put(newVar.getName(), newVar);</span>
+
+<span class="nc" id="L67">        return newVar;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DecodingTS.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.encoding</a> &gt; <span class="el_source">DecodingTS.java</span></div><h1>DecodingTS.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.encoding;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import net.automatalib.ts.acceptor.DeterministicAcceptorTS;
+import se.uu.it.smbugfinder.dfa.Symbol;
+
+public class DecodingTS &lt;S&gt; implements DeterministicAcceptorTS&lt;RegisterState&lt;S&gt;, Symbol&gt; {
+
+        private DeterministicAcceptorTS&lt;S, Label&gt; encodedTs;
+        private RegisterState&lt;S&gt; initial;
+        private RegisterState&lt;S&gt; sink;
+        private TokenMatcher tokenMatcher;
+        private Collection&lt;Label&gt; labels;
+
+<span class="fc" id="L21">        public DecodingTS(DeterministicAcceptorTS&lt;S, Label&gt; encodedTs, Collection&lt;Label&gt; labels) {</span>
+<span class="fc" id="L22">            this.encodedTs = encodedTs;</span>
+<span class="fc" id="L23">            this.initial = new RegisterState&lt;S&gt;(encodedTs.getInitialState(), new Valuation());</span>
+<span class="fc" id="L24">            this.sink = new RegisterState&lt;S&gt;(encodedTs.getInitialState(), null);</span>
+<span class="fc" id="L25">            this.tokenMatcher = new DefaultTokenMatcher();</span>
+<span class="fc" id="L26">            this.labels = labels;</span>
+<span class="fc" id="L27">        }</span>
+
+        public void setTokenMatcher(TokenMatcher tokenMatcher) {
+<span class="fc" id="L30">            this.tokenMatcher = tokenMatcher;</span>
+<span class="fc" id="L31">        }</span>
+
+        @Override
+        public RegisterState&lt;S&gt; getInitialState() {
+<span class="nc" id="L35">            return initial;</span>
+        }
+
+        @Override
+        public Collection&lt;RegisterState&lt;S&gt;&gt; getTransitions(RegisterState&lt;S&gt; state, Symbol symbol) {
+<span class="fc" id="L40">            return Arrays.asList(getTransition(state, symbol));</span>
+        }
+
+        @Override
+        public Set&lt;RegisterState&lt;S&gt;&gt; getInitialStates() {
+<span class="fc" id="L45">            return Collections.singleton(initial);</span>
+        }
+
+        @Override
+        public RegisterState&lt;S&gt; getSuccessor(RegisterState&lt;S&gt; state, Symbol symbol) {
+<span class="fc bfc" id="L50" title="All 2 branches covered.">            if (state.equals(sink)) {</span>
+<span class="fc" id="L51">                return sink;</span>
+            } else {
+<span class="fc" id="L53">                S dfaState = state.getState();</span>
+<span class="fc" id="L54">                List&lt;Label&gt; otherLabels = new ArrayList&lt;&gt;();</span>
+
+                // variables used to check for non-determinism/inconsistency in the specification
+<span class="fc" id="L57">                RegisterState&lt;S&gt; nextState = null, nextStateCandidate = null;</span>
+<span class="fc" id="L58">                Label previouslyMatchedLabel = null;</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">                for (Label label : labels) {</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">                    if (encodedTs.getSuccessor(dfaState, label) == null) {</span>
+<span class="fc" id="L62">                        continue;</span>
+                    }
+
+                    // we start by attempting to match the symbol against a non-other label
+<span class="fc bfc" id="L66" title="All 2 branches covered.">                    if (requiresOtherComputation(symbol, label)) {</span>
+<span class="fc" id="L67">                        otherLabels.add(label);</span>
+                    } else {
+<span class="fc" id="L69">                        nextStateCandidate = transition(state, symbol, label);</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">                        if (nextStateCandidate != null) {</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">                            if (previouslyMatchedLabel != null) {</span>
+<span class="nc" id="L72">                                    throw new RuntimeDecodingException(</span>
+<span class="nc" id="L73">                                            String.format(&quot;Non-determinism in state %s. %n&quot;</span>
+                                            + &quot;The concrete label %s can trigger two transitions: %s and %s.&quot;,
+                                            dfaState, symbol, previouslyMatchedLabel, label) );
+                            } else {
+<span class="fc" id="L77">                                nextState = nextStateCandidate;</span>
+<span class="fc" id="L78">                                previouslyMatchedLabel = label;</span>
+                            }
+                        }
+                    }
+<span class="fc" id="L82">                }</span>
+
+<span class="fc bfc" id="L84" title="All 2 branches covered.">                if (nextState == null) {</span>
+<span class="fc" id="L85">                    previouslyMatchedLabel = null;</span>
+                    // at this point, we know that either a transition was not specified for the symbol, or was done so by an other label
+<span class="fc bfc" id="L87" title="All 2 branches covered.">                    for (Label otherLabel : otherLabels) {</span>
+<span class="fc" id="L88">                        nextStateCandidate = transition(state, symbol, otherLabel);</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">                        if (nextStateCandidate != null) {</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">                            if (previouslyMatchedLabel != null) {</span>
+<span class="nc" id="L91">                                throw new RuntimeDecodingException(</span>
+<span class="nc" id="L92">                                        String.format(&quot;Non-determinism in state %s. %n&quot;</span>
+                                        + &quot;The concrete label %s can trigger two transitions: %s and %s.&quot;,
+                                        dfaState, symbol, previouslyMatchedLabel, otherLabel) );
+                            } else {
+<span class="fc" id="L96">                                nextState = nextStateCandidate;</span>
+<span class="fc" id="L97">                                previouslyMatchedLabel = otherLabel;</span>
+                            }
+                        }
+<span class="fc" id="L100">                    }</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">                    if (nextState != null) {</span>
+<span class="fc" id="L102">                        return nextState;</span>
+                    }
+<span class="fc" id="L104">                    return sink;</span>
+                } else {
+<span class="fc" id="L106">                    return nextState;</span>
+                }
+            }
+        }
+
+        private boolean requiresOtherComputation(Symbol symbol, Label label) {
+<span class="fc" id="L112">            DescriptionToken matchingToken = tokenMatcher.matchingAtomicToken(symbol, label.getDescription());</span>
+<span class="fc bfc" id="L113" title="All 4 branches covered.">            return matchingToken != null &amp;&amp; matchingToken.getType() == DescriptionType.OTHER;</span>
+        }
+
+        private RegisterState&lt;S&gt; transition(RegisterState&lt;S&gt; state, Symbol symbol, Label label) {
+<span class="fc" id="L117">            S encodedDfaState = state.getState();</span>
+<span class="fc" id="L118">            S nextEncodedDfaState = encodedTs.getTransition(encodedDfaState, label);</span>
+<span class="fc" id="L119">            RegisterState&lt;S&gt; nextState = null;</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">            if (nextEncodedDfaState != null) {</span>
+<span class="fc" id="L121">                nextState = transition(state, symbol, label, nextEncodedDfaState);</span>
+            }
+<span class="fc" id="L123">            return nextState;</span>
+        }
+
+        private RegisterState&lt;S&gt; transition(RegisterState&lt;S&gt; state, Symbol symbol, Label label, S encodedDfaState ) {
+<span class="fc" id="L127">            RegisterState&lt;S&gt;  nextState = null;</span>
+<span class="fc" id="L128">            DescriptionToken symbolDescription = label.getDescription();</span>
+            Valuation nextValuation;
+<span class="fc bfc" id="L130" title="All 2 branches covered.">            if (tokenMatcher.match(symbol, symbolDescription)) {</span>
+<span class="fc" id="L131">                nextValuation = label.getUpdate().update(symbol, state.getValuation());</span>
+<span class="fc" id="L132">                boolean guard = label.getGuard().eval(symbol, nextValuation);</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">                if (guard) {</span>
+<span class="fc" id="L134">                    nextState = new RegisterState&lt;S&gt;(encodedDfaState, nextValuation);</span>
+                }
+            }
+<span class="fc" id="L137">            return nextState;</span>
+        }
+
+        @Override
+        public RegisterState&lt;S&gt; getTransition(RegisterState&lt;S&gt; state, Symbol input) {
+<span class="fc" id="L142">            RegisterState&lt;S&gt; successor = getSuccessor(state, input);</span>
+<span class="fc" id="L143">            return successor;</span>
+        }
+
+
+
+        @Override
+        public Boolean getStateProperty(RegisterState&lt;S&gt; state) {
+<span class="fc" id="L150">            return isAccepting(encodedTs, state);</span>
+        }
+
+        private boolean isAccepting(DeterministicAcceptorTS&lt;S, Label&gt; encodedDfa, RegisterState&lt;S&gt; state ) {
+<span class="fc" id="L154">            return encodedDfa.isAccepting( state.getState());</span>
+        }
+
+        @Override
+        public Void getTransitionProperty(RegisterState&lt;S&gt; transition) {
+<span class="fc" id="L159">            return null;</span>
+        }
+
+        @Override
+        public boolean isAccepting(RegisterState&lt;S&gt; state) {
+<span class="nc bnc" id="L164" title="All 2 branches missed.">            if (state.equals(sink)) {</span>
+<span class="nc" id="L165">                return false;</span>
+            } else {
+<span class="nc" id="L167">                return isAccepting(encodedTs, state);</span>
+            }
+        }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatisticsTracker.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder</a> &gt; <span class="el_source">StatisticsTracker.java</span></div><h1>StatisticsTracker.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder;
+
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import se.uu.it.smbugfinder.bug.BugValidationStatus;
+import se.uu.it.smbugfinder.bug.StateMachineBug;
+import se.uu.it.smbugfinder.pattern.AbstractBugPattern;
+import se.uu.it.smbugfinder.pattern.BugPatterns;
+import se.uu.it.smbugfinder.pattern.GeneralBugPattern;
+import se.uu.it.smbugfinder.sut.Counter;
+
+
+public class StatisticsTracker {
+
+    private Counter inputCounter;
+    private Counter resetCounter;
+    private long startTime;
+    private long totalTime;
+    private long totalBugs;
+
+    private long validationInputCount;
+    private long validationResetCount;
+
+    private Set&lt;AbstractBugPattern&gt; loadedBugPatterns;
+    private Set&lt;AbstractBugPattern&gt; foundBugPatterns;
+    private Set&lt;AbstractBugPattern&gt; validatedBugPatterns;
+
+    private Map&lt;AbstractBugPattern, Long&gt; validatedTSBugPatterns;
+
+    private Map&lt;AbstractBugPattern, Long&gt; bugPatternValidationInputCount;
+    private Map&lt;AbstractBugPattern, Long&gt; bugPatternValidationResetCount;
+
+    private Map&lt;GeneralBugPattern, Long&gt; generalBugPatternSequenceCount;
+    private Map&lt;GeneralBugPattern, Long&gt; generalBugPatternUncategorizedSequenceCount;
+    private Map&lt;GeneralBugPattern, Long&gt; generalBugPatternValidatedSequenceCount;
+    private Map&lt;GeneralBugPattern, Long&gt; generalBugPatternValidatedUncategorizedSequenceCount;
+    private boolean timeout;
+
+
+    private StateMachineBugFinderCoreConfig config;
+    private Collection&lt;?&gt; inputAlphabet;
+
+<span class="fc" id="L50">    public StatisticsTracker(StateMachineBugFinderCoreConfig config, BugPatterns bugPatterns) {</span>
+<span class="fc" id="L51">        this.config = config;</span>
+<span class="fc" id="L52">        loadedBugPatterns = new TreeSet&lt;&gt;(bpComp());</span>
+<span class="fc" id="L53">        loadedBugPatterns.addAll(bugPatterns.getBugPatterns());</span>
+<span class="fc" id="L54">        foundBugPatterns = new TreeSet&lt;&gt;(bpComp());</span>
+<span class="fc" id="L55">        validatedBugPatterns = new TreeSet&lt;&gt;(bpComp());</span>
+<span class="fc" id="L56">        validatedTSBugPatterns = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L57">        bugPatternValidationInputCount = new TreeMap&lt;&gt;(bpComp());</span>
+<span class="fc" id="L58">        bugPatternValidationResetCount = new TreeMap&lt;&gt;(bpComp());</span>
+<span class="fc" id="L59">        generalBugPatternSequenceCount = new TreeMap&lt;&gt;(bpComp());</span>
+<span class="fc" id="L60">        generalBugPatternUncategorizedSequenceCount = new TreeMap&lt;&gt;(bpComp());</span>
+<span class="fc" id="L61">        generalBugPatternValidatedSequenceCount = new TreeMap&lt;&gt;(bpComp());</span>
+<span class="fc" id="L62">        generalBugPatternValidatedUncategorizedSequenceCount = new TreeMap&lt;&gt;(bpComp());</span>
+<span class="fc" id="L63">    }</span>
+
+    private Comparator&lt;AbstractBugPattern&gt; bpComp() {
+<span class="fc" id="L66">        return (bp1, bp2) -&gt; bp1.getId().compareTo(bp2.getId());</span>
+    }
+
+
+    public void setSutTracking(Counter inputCounter, Counter resetCounter) {
+<span class="fc" id="L71">        this.inputCounter = inputCounter;</span>
+<span class="fc" id="L72">        this.resetCounter = resetCounter;</span>
+<span class="fc" id="L73">    }</span>
+
+
+    public void startStateMachineBugFinding(Collection&lt;?&gt; inputAlphabet) {
+<span class="fc" id="L77">        startTime = System.currentTimeMillis();</span>
+<span class="fc" id="L78">        this.inputAlphabet = inputAlphabet;</span>
+
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Gets the current time of the experiment
+     */
+    public long currentTimeMillis() {
+<span class="nc" id="L86">        return System.currentTimeMillis() - startTime;</span>
+    }
+
+    public &lt;I,O&gt; void finishStateMachineBugFinding(List&lt;StateMachineBug&lt;I,O&gt;&gt; bugs) {
+<span class="fc" id="L90">        totalTime = System.currentTimeMillis() - startTime;</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        for (StateMachineBug&lt;I,O&gt; modelBug : bugs) {</span>
+<span class="fc" id="L92">            foundBugPatterns.add(modelBug.getBugPattern());</span>
+
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            if (modelBug.getStatus() == BugValidationStatus.VALIDATION_SUCCESSFUL) {</span>
+<span class="fc" id="L95">                validatedBugPatterns.add(modelBug.getBugPattern());</span>
+            }
+<span class="fc" id="L97">        }</span>
+<span class="fc" id="L98">        totalBugs = bugs.size();</span>
+<span class="fc" id="L99">    }</span>
+
+    public void startValidation(AbstractBugPattern bugPattern) {
+<span class="fc" id="L102">        validationInputCount = inputCounter.get();</span>
+<span class="fc" id="L103">        validationResetCount = resetCounter.get();</span>
+<span class="fc" id="L104">    }</span>
+
+    public void found(AbstractBugPattern bugPattern) {
+<span class="nc" id="L107">        foundBugPatterns.add(bugPattern);</span>
+<span class="nc" id="L108">    }</span>
+
+    public void timeout() {
+<span class="nc" id="L111">        timeout = true;</span>
+<span class="nc" id="L112">    }</span>
+
+    public void validated(AbstractBugPattern bugPattern) {
+<span class="nc" id="L115">        validatedBugPatterns.add(bugPattern);</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (!validatedTSBugPatterns.containsKey(bugPattern)) {</span>
+<span class="nc" id="L117">            validatedTSBugPatterns.put(bugPattern, System.currentTimeMillis() - startTime);</span>
+        }
+<span class="nc" id="L119">    }</span>
+
+    public void endValidation(AbstractBugPattern bugPattern) {
+<span class="fc" id="L122">        bugPatternValidationInputCount.put(bugPattern, inputCounter.get() - validationInputCount);</span>
+<span class="fc" id="L123">        bugPatternValidationResetCount.put(bugPattern, resetCounter.get() - validationResetCount);</span>
+<span class="fc" id="L124">    }</span>
+
+    public void handleGeneralBugPattern(GeneralBugPattern bugPattern, long sequences, long uncategorizedSequences) {
+<span class="fc" id="L127">        generalBugPatternUncategorizedSequenceCount.put(bugPattern, uncategorizedSequences);</span>
+<span class="fc" id="L128">        generalBugPatternSequenceCount.put(bugPattern, sequences);</span>
+<span class="fc" id="L129">    }</span>
+
+    public void handleValidatedGeneralBugPattern(GeneralBugPattern bugPattern, long validatedSequences, long validatedUncategorizedSequences) {
+<span class="nc" id="L132">        generalBugPatternValidatedUncategorizedSequenceCount.put(bugPattern, validatedUncategorizedSequences);</span>
+<span class="nc" id="L133">        generalBugPatternValidatedSequenceCount.put(bugPattern, validatedSequences);</span>
+<span class="nc" id="L134">    }</span>
+
+    public Statistics generateStatistics() {
+<span class="fc" id="L137">        Statistics statistics = new Statistics(config);</span>
+<span class="fc" id="L138">        statistics.setInputAlphabet(inputAlphabet);</span>
+
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        if (inputCounter != null) {</span>
+<span class="fc" id="L141">            statistics.setInputs(inputCounter.get());</span>
+<span class="fc" id="L142">            statistics.setResets(resetCounter.get());</span>
+        }
+<span class="fc" id="L144">        statistics.setTimeout(timeout);</span>
+<span class="fc" id="L145">        statistics.setTotalBugs(totalBugs);</span>
+<span class="fc" id="L146">        statistics.setLoadedBugPatterns(loadedBugPatterns);</span>
+<span class="fc" id="L147">        statistics.setFoundBugPatterns(foundBugPatterns);</span>
+<span class="fc" id="L148">        statistics.setValidationBugPatterns(validatedBugPatterns);</span>
+<span class="fc" id="L149">        statistics.setValidationTSBugPatterns(validatedTSBugPatterns);</span>
+<span class="fc" id="L150">        statistics.setBugPatternValidationCounts(bugPatternValidationInputCount, bugPatternValidationResetCount);</span>
+<span class="fc" id="L151">        statistics.setGeneralBugPatternSequenceCounts(generalBugPatternSequenceCount, generalBugPatternUncategorizedSequenceCount);</span>
+<span class="fc" id="L152">        statistics.setGeneralBugPatternValidatedSequenceCounts(generalBugPatternValidatedSequenceCount, generalBugPatternValidatedUncategorizedSequenceCount);</span>
+<span class="fc" id="L153">        statistics.setTotalTime(totalTime);</span>
+
+<span class="fc" id="L155">        return statistics;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

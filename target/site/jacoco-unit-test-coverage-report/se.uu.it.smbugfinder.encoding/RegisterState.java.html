@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegisterState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.encoding</a> &gt; <span class="el_source">RegisterState.java</span></div><h1>RegisterState.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.encoding;
+
+public class RegisterState&lt;S&gt; {
+    private Valuation valuation;
+    private S state;
+<span class="fc" id="L6">    public RegisterState(S state, Valuation valuation) {</span>
+<span class="fc" id="L7">        this.valuation = valuation;</span>
+<span class="fc" id="L8">        this.state = state;</span>
+<span class="fc" id="L9">    }</span>
+    public Valuation getValuation() {
+<span class="fc" id="L11">        return valuation;</span>
+    }
+    public S getState() {
+<span class="fc" id="L14">        return state;</span>
+    }
+
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L20">        final int prime = 31;</span>
+<span class="fc" id="L21">        int result = 1;</span>
+<span class="pc bpc" id="L22" title="1 of 2 branches missed.">        result = prime * result + ((state == null) ? 0 : state.hashCode());</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        result = prime * result + ((valuation == null) ? 0 : valuation.hashCode());</span>
+<span class="fc" id="L24">        return result;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (this == obj)</span>
+<span class="fc" id="L30">            return true;</span>
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        if (obj == null)</span>
+<span class="nc" id="L32">            return false;</span>
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">        if (! (obj instanceof RegisterState&lt;?&gt;))</span>
+<span class="nc" id="L34">            return false;</span>
+<span class="fc" id="L35">        RegisterState&lt;?&gt; other = (RegisterState&lt;?&gt;) obj;</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        if (state == null) {</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">            if (other.state != null)</span>
+<span class="nc" id="L38">                return false;</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        } else if (!state.equals(other.state))</span>
+<span class="fc" id="L40">            return false;</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (valuation == null) {</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">            if (other.valuation != null)</span>
+<span class="fc" id="L43">                return false;</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        } else if (!valuation.equals(other.valuation))</span>
+<span class="fc" id="L45">            return false;</span>
+<span class="fc" id="L46">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

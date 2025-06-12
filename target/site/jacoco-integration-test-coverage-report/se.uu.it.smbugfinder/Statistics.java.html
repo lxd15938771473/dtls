@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Statistics.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder</a> &gt; <span class="el_source">Statistics.java</span></div><h1>Statistics.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import se.uu.it.smbugfinder.pattern.AbstractBugPattern;
+import se.uu.it.smbugfinder.pattern.GeneralBugPattern;
+
+public class Statistics extends ExportableResult {
+    private long totalTime;
+    private long inputs;
+    private long resets;
+    private boolean validationEnabled;
+    private long totalBugs;
+
+    // Model bug finder
+    private Collection&lt;AbstractBugPattern&gt; foundBugPatterns;
+    private Collection&lt;AbstractBugPattern&gt; loadedBugPatterns;
+    private Collection&lt;AbstractBugPattern&gt; validatedBugPatterns;
+
+    private Map&lt;AbstractBugPattern, Long&gt; bpInputCount;
+    private Map&lt;AbstractBugPattern, Long&gt; bpResetCount;
+    private Map&lt;GeneralBugPattern, Long&gt; gbpSequenceCount;
+    private Map&lt;GeneralBugPattern, Long&gt; gbpUncategorizedSequenceCount;
+
+    private StateMachineBugFinderCoreConfig config;
+    private Collection&lt;?&gt; inputAlphabet;
+    private boolean timeout;
+    private Map&lt;AbstractBugPattern, Long&gt; validatedTSBugPatterns;
+    private Map&lt;GeneralBugPattern, Long&gt; gbpValidatedSequenceCount;
+    private Map&lt;GeneralBugPattern, Long&gt; gbpValidatedUncategorizedSequenceCount;
+
+<span class="fc" id="L38">    public Statistics(StateMachineBugFinderCoreConfig config) {</span>
+<span class="fc" id="L39">        this.config = config;</span>
+<span class="fc" id="L40">        foundBugPatterns = Collections.emptyList();</span>
+<span class="fc" id="L41">        loadedBugPatterns = Collections.emptyList();</span>
+<span class="fc" id="L42">        validatedBugPatterns = Collections.emptyList();</span>
+<span class="fc" id="L43">        validationEnabled = config.isValidate();</span>
+<span class="fc" id="L44">    }</span>
+
+
+    @Override
+    public String toString() {
+<span class="nc" id="L49">        StringWriter sw = new StringWriter();</span>
+<span class="nc" id="L50">        export(sw);</span>
+<span class="nc" id="L51">        String statsString = sw.toString();</span>
+<span class="nc" id="L52">        return statsString;</span>
+    }
+
+    @Override
+    public void doExport(PrintWriter out) {
+<span class="fc" id="L57">        title(&quot;Run Description&quot;, out);</span>
+<span class="fc" id="L58">        generateRunDescription(out, config, inputAlphabet);</span>
+<span class="fc" id="L59">        title(&quot;Statistics&quot;, out);</span>
+
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">        out.println(&quot;Experiment completed: &quot; + !timeout);</span>
+
+        //section(&quot;General&quot;, out);
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        if (validationEnabled) {</span>
+<span class="nc" id="L65">            out.println(&quot;Number of inputs: &quot; + inputs);</span>
+<span class="nc" id="L66">            out.println(&quot;Number of resets: &quot; + resets);</span>
+        }
+<span class="fc" id="L68">        out.println(&quot;Number of bugs: &quot; + totalBugs);</span>
+<span class="fc" id="L69">        out.println(&quot;Time bug-checking took (ms): &quot; + totalTime);</span>
+
+        // section(&quot;State Machine Bug Finder&quot;, out);
+<span class="fc" id="L72">        printCollection(&quot;Bug patterns loaded&quot;, loadedBugPatterns, AbstractBugPattern::getName, out);</span>
+<span class="fc" id="L73">        printCollection(&quot;Bug patterns found&quot;, foundBugPatterns, AbstractBugPattern::getName, out);</span>
+<span class="fc" id="L74">        printCollection(&quot;Bug patterns validated successfully&quot;, validatedBugPatterns, AbstractBugPattern::getName, out);</span>
+<span class="pc bpc" id="L75" title="3 of 4 branches missed.">        if (config.isValidate() &amp;&amp; bpInputCount != null) {</span>
+<span class="nc" id="L76">            printCounterMap(&quot;Validation Inputs per Bug Pattern&quot;, bpInputCount, AbstractBugPattern::getName, out);</span>
+<span class="nc" id="L77">            printCounterMap(&quot;Validation Resets per Bug Pattern&quot;, bpResetCount, AbstractBugPattern::getName, out);</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            if (!validatedTSBugPatterns.isEmpty()) {</span>
+<span class="nc" id="L79">                printCounterMap(&quot;Validation Time per Bug Pattern (relative to start)&quot;,validatedTSBugPatterns, AbstractBugPattern::getName, out);</span>
+            }
+        }
+
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if  (gbpSequenceCount.size() &gt; 0) {</span>
+<span class="fc" id="L84">            printCounterMap(&quot;Sequences Generated per General Bug Pattern&quot;, gbpSequenceCount, AbstractBugPattern::getName, out);</span>
+<span class="fc" id="L85">            printCounterMap(&quot;Uncategorized Sequences Generated per General Bug Pattern&quot;, gbpUncategorizedSequenceCount, AbstractBugPattern::getName, out);</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">            if (config.isValidate()) {</span>
+<span class="nc" id="L87">                printCounterMap(&quot;Validated Sequences Generated per General Bug Pattern&quot;, gbpValidatedSequenceCount, AbstractBugPattern::getName, out);</span>
+<span class="nc" id="L88">                printCounterMap(&quot;Validated Uncategorized Sequences Generated per General Bug Pattern&quot;, gbpValidatedUncategorizedSequenceCount, AbstractBugPattern::getName, out);</span>
+            }
+        }
+<span class="fc" id="L91">    }</span>
+
+    private &lt;T,MT&gt; void printCounterMap(String name, Map&lt;T, Long&gt; map, Function&lt;T,MT&gt; mapping, PrintWriter out) {
+<span class="fc" id="L94">        out.println(name);</span>
+<span class="fc" id="L95">        map.forEach((k,v) -&gt; out.println(&quot;   &quot; + mapping.apply(k) + &quot; : &quot; + v));</span>
+<span class="fc" id="L96">        out.println();</span>
+<span class="fc" id="L97">    }</span>
+
+    private &lt;T,MT&gt; void printCollection(String name, Collection&lt;T&gt; collection, Function&lt;T,MT&gt; mapping, PrintWriter out) {
+<span class="fc" id="L100">        out.format(name + &quot; (%d): %s&quot;, collection.size(), collection.stream().map(mapping).collect(Collectors.toList()).toString());</span>
+<span class="fc" id="L101">        out.println();</span>
+<span class="fc" id="L102">    }</span>
+
+    public void generateRunDescription(PrintWriter out, StateMachineBugFinderCoreConfig config, Collection&lt;?&gt; alphabet) {
+<span class="fc" id="L105">        section(&quot;State Machine Bug Finder Parameters&quot;, out);</span>
+<span class="fc" id="L106">        out.println(&quot;Alphabet: &quot; + alphabet);</span>
+
+        //out.println(String.format(&quot;Loaded Bug Patterns (%d): %s&quot;, loadedBugPatterns.size(),
+        //			loadedBugPatterns.stream()
+        //			.map(bp -&gt; bp.getName()).collect(Collectors.toList()).toString()));
+<span class="fc" id="L111">        out.println(&quot;Bug Validation Enabled: &quot; + config.isValidate());</span>
+<span class="fc" id="L112">        out.println(&quot;Uncategorized Bug Bound: &quot; + config.getUncategorizedBugBound());</span>
+<span class="fc" id="L113">    }</span>
+    public long getTotalTime() {
+<span class="nc" id="L115">        return totalTime;</span>
+    }
+    public void setTotalTime(long totalTime) {
+<span class="fc" id="L118">        this.totalTime = totalTime;</span>
+<span class="fc" id="L119">    }</span>
+
+    public long getInputs() {
+<span class="nc" id="L122">        return inputs;</span>
+    }
+    public void setInputs(long inputs) {
+<span class="nc" id="L125">        this.inputs = inputs;</span>
+<span class="nc" id="L126">    }</span>
+    public long getResets() {
+<span class="nc" id="L128">        return resets;</span>
+    }
+    public void setResets(long resets) {
+<span class="nc" id="L131">        this.resets = resets;</span>
+<span class="nc" id="L132">    }</span>
+
+    public void setTotalBugs(long totalBugs) {
+<span class="fc" id="L135">        this.totalBugs = totalBugs;</span>
+<span class="fc" id="L136">    }</span>
+
+    public void setTimeout(boolean timeout) {
+<span class="fc" id="L139">        this.timeout = timeout;</span>
+<span class="fc" id="L140">    }</span>
+
+    public void setFoundBugPatterns(Collection&lt;AbstractBugPattern&gt; modelBugPatternsFound) {
+<span class="fc" id="L143">        this.foundBugPatterns = modelBugPatternsFound;</span>
+<span class="fc" id="L144">    }</span>
+
+    public void setLoadedBugPatterns(Collection&lt;AbstractBugPattern&gt; loadedBugPatterns) {
+<span class="fc" id="L147">        this.loadedBugPatterns = loadedBugPatterns;</span>
+<span class="fc" id="L148">    }</span>
+
+    public void setValidationBugPatterns(Collection&lt;AbstractBugPattern&gt; validatedBugPatterns) {
+<span class="fc" id="L151">        this.validatedBugPatterns = validatedBugPatterns;</span>
+<span class="fc" id="L152">    }</span>
+
+    public void setBugPatternValidationCounts(Map&lt;AbstractBugPattern, Long&gt; bpInputCount, Map&lt;AbstractBugPattern, Long&gt; bpResetCount) {
+<span class="fc" id="L155">        this.bpInputCount = bpInputCount;</span>
+<span class="fc" id="L156">        this.bpResetCount = bpResetCount;</span>
+<span class="fc" id="L157">    }</span>
+
+    public void setGeneralBugPatternSequenceCounts(Map&lt;GeneralBugPattern, Long&gt; gbpSequenceCount, Map&lt;GeneralBugPattern, Long&gt; gbpUncategorizedSequenceCount) {
+<span class="fc" id="L160">        this.gbpSequenceCount = gbpSequenceCount;</span>
+<span class="fc" id="L161">        this.gbpUncategorizedSequenceCount = gbpUncategorizedSequenceCount;</span>
+<span class="fc" id="L162">    }</span>
+
+    public void setGeneralBugPatternValidatedSequenceCounts(Map&lt;GeneralBugPattern, Long&gt; gbpValidatedSequenceCount, Map&lt;GeneralBugPattern, Long&gt; gbpValidatedUncategorizedSequenceCount) {
+<span class="fc" id="L165">        this.gbpValidatedSequenceCount = gbpValidatedSequenceCount;</span>
+<span class="fc" id="L166">        this.gbpValidatedUncategorizedSequenceCount = gbpValidatedUncategorizedSequenceCount;</span>
+<span class="fc" id="L167">    }</span>
+
+    public void setInputAlphabet(Collection&lt;?&gt; inputAlphabet) {
+<span class="fc" id="L170">        this.inputAlphabet = inputAlphabet;</span>
+<span class="fc" id="L171">    }</span>
+
+
+    public void setValidationTSBugPatterns(Map&lt;AbstractBugPattern, Long&gt; validatedTSBugPatterns) {
+<span class="fc" id="L175">        this.validatedTSBugPatterns = validatedTSBugPatterns;</span>
+
+<span class="fc" id="L177">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

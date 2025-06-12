@@ -1,0 +1,16 @@
+digraph G {
+label=""
+start [color="red"]
+bug [shape="doublecircle"]
+
+start -> kexinit [label="O_KEXINIT"]
+start -> start [label="other"]
+kexinit -> sr [label="I_SR_AUTH"]
+kexinit -> kexinit [label="other"]
+sr -> bug [label="other - {O_DISCONNECT, O_NO_CONN}"]
+sr -> kexinit [label="O_SR_ACCEPT"]
+
+
+__start0 [label="" shape="none" width="0" height="0"];
+__start0 -> start;
+}

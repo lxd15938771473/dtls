@@ -1,0 +1,86 @@
+
+================================================================================
+Bug Report
+================================================================================
+
+
+--------------------------------------------------------------------------------
+Listing Bugs
+--------------------------------------------------------------------------------
+
+Bug Id: 1
+Bug Pattern: Rekey Fail Before Auth
+Severity: LOW
+Description: Server refuses rekey after a service request is accepted,
+            before authentication. (Property 5)
+Trace: KEXINIT/KEXINIT KEX30/KEX31+NEWKEYS NEWKEYS/NO_RESP SR_AUTH/SR_ACCEPT KEXINIT/KEXINIT KEX30/KEX31+NEWKEYS NEWKEYS/NO_RESP 
+Inputs: KEXINIT KEX30 NEWKEYS SR_AUTH KEXINIT KEX30 NEWKEYS
+Validation Status: NOT_VALIDATED
+
+Bug Id: 2
+Bug Pattern: Rekey Fail After Auth
+Severity: LOW
+Description: Server refuses rekey with an authenticated client.
+            (Property 5)
+Trace: KEXINIT/KEXINIT KEX30/KEX31+NEWKEYS NEWKEYS/NO_RESP UA_PK_OK/UA_SUCCESS KEXINIT/KEXINIT KEX30/KEX31+NEWKEYS NEWKEYS/NO_RESP 
+Inputs: KEXINIT KEX30 NEWKEYS UA_PK_OK KEXINIT KEX30 NEWKEYS
+Validation Status: NOT_VALIDATED
+
+Bug Id: 3
+Bug Pattern: Unignored Authentication Request After UA_SUCCESS
+Severity: MEDIUM
+Description: An authentication request received after a UA_SUCCESS is
+            not ignored (Property 11).
+Trace: KEXINIT/KEXINIT KEX30/KEX31+NEWKEYS NEWKEYS/NO_RESP UA_PK_OK/UA_SUCCESS UA_PK_OK/NO_RESP 
+Inputs: KEXINIT KEX30 NEWKEYS UA_PK_OK UA_PK_OK
+Validation Status: NOT_VALIDATED
+
+Bug Id: 4
+Bug Pattern: Invalid CH_CLOSE Response
+Severity: LOW
+Description: Server does not respond to a CH_CLOSE with a CH_CLOSE
+            (Property 12).
+Trace: KEXINIT/KEXINIT KEX30/KEX31+NEWKEYS NEWKEYS/NO_RESP UA_PK_OK/UA_SUCCESS CH_OPEN/CH_OPEN_SUCCESS CH_CLOSE/CH_EOF 
+Inputs: KEXINIT KEX30 NEWKEYS UA_PK_OK CH_OPEN CH_CLOSE
+Validation Status: NOT_VALIDATED
+
+Bug Id: 5
+Bug Pattern: Missing SR_AUTH
+Severity: LOW
+Description: Authentication is performed without SR_AUTH.
+Trace: KEXINIT/KEXINIT KEX30/KEX31+NEWKEYS NEWKEYS/NO_RESP UA_PK_OK/UA_SUCCESS 
+Inputs: KEXINIT KEX30 NEWKEYS UA_PK_OK
+Validation Status: NOT_VALIDATED
+
+
+================================================================================
+Run Description
+================================================================================
+
+
+--------------------------------------------------------------------------------
+State Machine Bug Finder Parameters
+--------------------------------------------------------------------------------
+
+Alphabet: [SR_CONN, CH_CLOSE, KEXINIT, SR_AUTH, NEWKEYS, CH_EOF, KEX30, CH_OPEN, CH_REQUEST_PTY, CH_DATA, UA_PK_OK, UA_PK_NOK]
+Bug Validation Enabled: false
+Uncategorized Bug Bound: 10
+
+================================================================================
+Statistics
+================================================================================
+
+Experiment completed: true
+Number of bugs: 5
+Time bug-checking took (ms): 91
+Bug patterns loaded (21): [Early Service Accept, Unauthenticated Client, Rekey Fail Before Auth, Rekey Fail After Auth, Continue After Disconnect, Invalid Response Before NEWKEYS, Invalid SR_AUTH Response, Invalid Authentication Rejection Response, Multiple UA_SUCCESS, Unignored Authentication Request After UA_SUCCESS, Invalid CH_CLOSE Response, Auth Fail After Rekey, Channel Open Fail After Rekey, Channel Request Terminal Fail After Rekey, Missing NEWKEYS, Missing UA_SUCCESS, Multiple KEXINIT, Missing SR_AUTH, Unresponsive State, Connection Layer Bug, Transport Layer Bug]
+Bug patterns found (5): [Rekey Fail Before Auth, Rekey Fail After Auth, Unignored Authentication Request After UA_SUCCESS, Invalid CH_CLOSE Response, Missing SR_AUTH]
+Bug patterns validated successfully (0): []
+Sequences Generated per General Bug Pattern
+   Connection Layer Bug : 6
+   Transport Layer Bug : 2
+
+Uncategorized Sequences Generated per General Bug Pattern
+   Connection Layer Bug : 0
+   Transport Layer Bug : 0
+

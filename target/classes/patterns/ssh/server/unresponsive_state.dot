@@ -1,0 +1,20 @@
+digraph G {
+label=""
+start [color="red"]
+bug [shape="doublecircle"]
+
+start -> start [label="other"]
+start -> kexinit [label="I_KEXINIT"] 
+
+kexinit -> start [label="other_output"]
+kexinit -> firstunresp [label="other_input"]
+
+firstunresp -> start [label="other"]
+firstunresp -> secondunresp [label="I_KEXINIT"]
+
+secondunresp -> start [label="other_output"]
+secondunresp -> bug [label="other_input"]
+
+__start0 [label="" shape="none" width="0" height="0"];
+__start0 -> start;
+}

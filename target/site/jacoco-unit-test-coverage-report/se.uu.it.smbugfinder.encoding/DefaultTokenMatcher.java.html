@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultTokenMatcher.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder.encoding</a> &gt; <span class="el_source">DefaultTokenMatcher.java</span></div><h1>DefaultTokenMatcher.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder.encoding;
+
+import se.uu.it.smbugfinder.dfa.Symbol;
+
+<span class="fc" id="L5">public class DefaultTokenMatcher implements TokenMatcher {</span>
+
+    @Override
+    public boolean match(Symbol symbol, DescriptionToken description) {
+<span class="fc" id="L9">        DescriptionToken matchingToken = matchingAtomicToken(symbol, description);</span>
+<span class="fc bfc" id="L10" title="All 2 branches covered.">        return matchingToken != null;</span>
+    }
+
+    /**
+     * In case a symbol matches a token, return the atomic token that it is matched to.
+     */
+    @Override
+    public DescriptionToken matchingAtomicToken(Symbol symbol, DescriptionToken description) {
+<span class="fc" id="L18">        DescriptionToken matchingToken = null;</span>
+<span class="pc bpc" id="L19" title="1 of 6 branches missed.">        switch(description.getType()) {</span>
+        case SYMBOL -&gt; {
+<span class="fc" id="L21">            SymbolToken symbolToken = (SymbolToken) description;</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">            if (symbolToken.getSymbolString().equals(symbol.name())) {</span>
+<span class="pc bpc" id="L23" title="1 of 4 branches missed.">                if (symbolToken.isInput() == null || symbolToken.isInput().booleanValue() == symbol.isInput()) {</span>
+<span class="fc" id="L24">                    matchingToken = symbolToken;</span>
+                }
+            }
+<span class="fc" id="L27">          }</span>
+        case FILTER -&gt; {
+<span class="fc" id="L29">            RegexToken regexDescription = (RegexToken) description;</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">            if (symbol.toString().matches(regexDescription.getRegexFilter())) {</span>
+<span class="fc" id="L31">                matchingToken = regexDescription;</span>
+            }
+<span class="fc" id="L33">          }</span>
+        case BINARY_EXPRESSION -&gt; {
+<span class="fc" id="L35">            SetExpressionToken expressionToken = (SetExpressionToken) description;</span>
+<span class="fc" id="L36">            SetOperator operation = expressionToken.getOperator();</span>
+<span class="fc" id="L37">            DescriptionToken leftMatchingToken = matchingAtomicToken(symbol, expressionToken.getLeft());</span>
+<span class="fc" id="L38">            DescriptionToken rightMatchingToken = matchingAtomicToken(symbol, expressionToken.getRight());</span>
+<span class="pc bpc" id="L39" title="1 of 3 branches missed.">            switch (operation) {</span>
+            case DIFFERENCE:
+<span class="fc bfc" id="L41" title="All 4 branches covered.">                if (leftMatchingToken != null &amp;&amp; rightMatchingToken == null) {</span>
+<span class="fc" id="L42">                    matchingToken = leftMatchingToken;</span>
+                }
+                break;
+            case UNION:
+<span class="fc bfc" id="L46" title="All 2 branches covered.">                if (leftMatchingToken != null) {</span>
+<span class="fc" id="L47">                    matchingToken = leftMatchingToken;</span>
+                } else {
+<span class="fc bfc" id="L49" title="All 2 branches covered.">                    if (rightMatchingToken != null) {</span>
+<span class="fc" id="L50">                        matchingToken = rightMatchingToken;</span>
+                    }
+                }
+                break;
+            default:
+<span class="nc" id="L55">                throw new RuntimeDecodingException(String.format(&quot;Unsupported binary operation type %s&quot;, operation.name()));</span>
+            }
+<span class="fc" id="L57">          }</span>
+        case ENUMERATION -&gt; {
+<span class="fc" id="L59">            EnumerationToken enumerationDescription = (EnumerationToken) description;</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">            for (DescriptionToken token : enumerationDescription.getSubTokens()) {</span>
+<span class="fc" id="L61">                matchingToken = matchingAtomicToken(symbol, token);</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">                if (matchingToken != null) {</span>
+<span class="fc" id="L63">                    break;</span>
+                }
+<span class="fc" id="L65">            }</span>
+<span class="fc" id="L66">          }</span>
+        case OTHER -&gt; {
+<span class="fc" id="L68">            OtherToken otherToken = (OtherToken) description;</span>
+<span class="pc bpc" id="L69" title="1 of 4 branches missed.">            switch(otherToken.getOtherTokenType()) {</span>
+            case ALL:
+<span class="fc" id="L71">                matchingToken = otherToken;</span>
+<span class="fc" id="L72">                break;</span>
+            case INPUT:
+<span class="fc bfc" id="L74" title="All 2 branches covered.">                if (symbol.isInput()) {</span>
+<span class="fc" id="L75">                    matchingToken = otherToken;</span>
+                }
+                break;
+            case OUTPUT:
+<span class="fc bfc" id="L79" title="All 2 branches covered.">                if (!symbol.isInput()) {</span>
+<span class="fc" id="L80">                    matchingToken = otherToken;</span>
+                }
+                break;
+            default:
+<span class="nc" id="L84">                throw new RuntimeDecodingException(String.format(&quot;Unsupported other token type %s&quot;, otherToken.getOtherTokenType().name()));</span>
+            }
+<span class="fc" id="L86">          }</span>
+        default -&gt; {
+<span class="nc" id="L88">            throw new RuntimeDecodingException(String.format(&quot;Unsupported symbol description type %s&quot;, description.getType().name()));</span>
+          }
+        };
+
+<span class="fc" id="L92">        return matchingToken;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Demo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">state-machine-bug-finder</a> &gt; <a href="index.source.html" class="el_package">se.uu.it.smbugfinder</a> &gt; <span class="el_source">Demo.java</span></div><h1>Demo.java</h1><pre class="source lang-java linenums">package se.uu.it.smbugfinder;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.List;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import net.automatalib.automaton.transducer.impl.CompactMealy;
+import net.automatalib.exception.FormatException;
+import net.automatalib.serialization.InputModelData;
+import net.automatalib.serialization.InputModelDeserializer;
+import net.automatalib.serialization.dot.DOTParsers;
+import se.uu.it.smbugfinder.dfa.MealySymbolExtractor;
+import se.uu.it.smbugfinder.dfa.Symbol;
+import se.uu.it.smbugfinder.dfa.SymbolMapping;
+import se.uu.it.smbugfinder.encoding.DefaultDFADecoder;
+import se.uu.it.smbugfinder.pattern.BugPatternLoader;
+import se.uu.it.smbugfinder.pattern.BugPatterns;
+import se.uu.it.smbugfinder.sut.SUT;
+import se.uu.it.smbugfinder.sut.SimulatedMealySUT;
+
+/**
+ * An interactive demo application showcasing how the state-machine-bug-finder works.
+ * A user is requested first a SUT model along, the bug patterns and other inputs relevant for bug checking.
+ * Each request may be skipped, in which case, default input is used.
+ */
+public class Demo {
+
+    private BufferedReader in;
+    private PrintStream out;
+    private Deque&lt;String&gt; commands;
+
+<span class="nc" id="L50">    public Demo(BufferedReader in, PrintStream out) {</span>
+<span class="nc" id="L51">        this.in = in;</span>
+<span class="nc" id="L52">        this.out = out;</span>
+<span class="nc" id="L53">        this.commands = new ArrayDeque&lt;String&gt;();</span>
+<span class="nc" id="L54">    }</span>
+
+    public Demo() {
+<span class="nc" id="L57">        this(new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8)), System.out);</span>
+<span class="nc" id="L58">    }</span>
+
+    public void bufferCommands(Collection&lt;String&gt; commands) {
+<span class="nc" id="L61">        this.commands.addAll(commands);</span>
+<span class="nc" id="L62">    }</span>
+
+    private String ask(String msg, boolean required) throws IOException {
+<span class="nc" id="L65">        out.println(msg);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (!commands.isEmpty()) {</span>
+<span class="nc" id="L67">            String command = commands.remove();</span>
+<span class="nc" id="L68">            out.println(command);</span>
+<span class="nc" id="L69">            return command;</span>
+        }
+        String newCommands;
+        do {
+<span class="nc" id="L73">            newCommands = in.readLine().trim();</span>
+<span class="nc bnc" id="L74" title="All 4 branches missed.">        } while (newCommands.isEmpty() &amp;&amp; required);</span>
+<span class="nc" id="L75">        String[] commandSplit = newCommands.split(&quot;\\s&quot;, -1);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (commandSplit.length &gt; 1) {</span>
+<span class="nc" id="L77">            Arrays.stream(commandSplit, 1, commandSplit.length).forEach(cmd -&gt; commands.add(cmd));</span>
+        }
+<span class="nc" id="L79">        return commandSplit[0];</span>
+    }
+
+    private String askOrDefault(String msg, String def) throws IOException {
+<span class="nc" id="L83">        String input = ask(msg, false);</span>
+<span class="nc bnc" id="L84" title="All 4 branches missed.">        if (input.length() == 0 || input.equals(&quot;-&quot;)) {</span>
+<span class="nc" id="L85">            input = def;</span>
+<span class="nc" id="L86">            out.println(&quot;Using (default): &quot; + def);</span>
+        }
+<span class="nc" id="L88">        return input;</span>
+    }
+
+    private void displayIntro() {
+<span class="nc" id="L92">        out.println(&quot;Welcome to the state-machine-bug-finder demo. &quot;);</span>
+<span class="nc" id="L93">        out.println(&quot;The purpose is to showcase how the bug-finder works on user-supplied models/bug patterns.&quot;);</span>
+<span class="nc" id="L94">    }</span>
+
+    private InputStream getResource(String path) throws FileNotFoundException {
+<span class="nc" id="L97">        InputStream resource = Demo.class.getResourceAsStream(path);</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (resource == null) {</span>
+<span class="nc" id="L99">            resource = new FileInputStream(path);</span>
+        }
+<span class="nc" id="L101">        return resource;</span>
+    }
+
+    public void run() throws IOException, FormatException {
+<span class="nc" id="L105">        displayIntro();</span>
+<span class="nc" id="L106">        String sutModel = askOrDefault(&quot;SUT model path: &quot;, &quot;/models/dtls/server/MbedTLS.dot&quot;);</span>
+<span class="nc" id="L107">        String patternsDir = askOrDefault(&quot;Bug patterns directory: &quot;, &quot;/patterns/dtls/server/&quot;);</span>
+<span class="nc" id="L108">        String sep = askOrDefault(&quot;Mealy output separator: &quot;, &quot;\\|&quot;);</span>
+<span class="nc" id="L109">        String noResp = askOrDefault(&quot;Mealy no response output: &quot;, &quot;TIMEOUT&quot;);</span>
+<span class="nc" id="L110">        String validationModel = askOrDefault(&quot;Path to Mealy machine used in validation: &quot;, null);</span>
+<span class="nc" id="L111">        String outputDirectory = askOrDefault(&quot;Output directory: &quot;, &quot;output&quot;);</span>
+
+<span class="nc" id="L113">        InputModelDeserializer&lt;@Nullable String, CompactMealy&lt;@Nullable String, @Nullable String&gt;&gt; mealyParser = DOTParsers.mealy();</span>
+<span class="nc" id="L114">        InputModelData&lt;@Nullable String, CompactMealy&lt;@Nullable String, @Nullable String&gt;&gt; sutModelData = mealyParser.readModel(getResource(sutModel));</span>
+
+<span class="nc" id="L116">        BugPatternLoader loader = new BugPatternLoader(new DefaultDFADecoder());</span>
+
+<span class="nc" id="L118">        SymbolMapping&lt;String, String&gt; symbolMapping = new StringSymbolMapper(noResp, sep);</span>
+<span class="nc" id="L119">        List&lt;Symbol&gt; allSymbols = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L120">        SUT&lt;String,String&gt; sut = null;</span>
+<span class="nc" id="L121">        MealySymbolExtractor.extractSymbols(sutModelData.model, sutModelData.alphabet, symbolMapping, allSymbols);</span>
+<span class="nc" id="L122">        BugPatterns bp = loader.loadPatterns(patternsDir, allSymbols);</span>
+<span class="nc" id="L123">        StateMachineBugFinderCoreConfig config = new StateMachineBugFinderCoreConfig();</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (validationModel == null) {</span>
+<span class="nc" id="L125">            config.setValidate(false);</span>
+        } else {
+<span class="nc" id="L127">            config.setValidate(true);</span>
+<span class="nc" id="L128">            InputModelData&lt;@Nullable String, CompactMealy&lt;@Nullable String, @Nullable String&gt;&gt; validationModelPath = mealyParser.readModel(getResource(validationModel));</span>
+<span class="nc" id="L129">            sut = new SimulatedMealySUT&lt;String, String&gt;(validationModelPath.model);</span>
+        }
+<span class="nc" id="L131">        StateMachineBugFinderCore&lt;String, String&gt; modelBugFinder = new StateMachineBugFinderCore&lt;&gt;(config);</span>
+
+<span class="nc" id="L133">        Files.createDirectories(Paths.get(outputDirectory));</span>
+<span class="nc" id="L134">        modelBugFinder.setExporter(new DFAExporter.DirectoryDFAExporter(outputDirectory));</span>
+
+<span class="nc" id="L136">        BugFinderResult&lt;String, String&gt; result = modelBugFinder.findBugs(bp, sutModelData.model, sutModelData.alphabet, symbolMapping, sut);</span>
+<span class="nc" id="L137">        export(result, outputDirectory, &quot;bug_report.txt&quot;);</span>
+<span class="nc" id="L138">    }</span>
+
+    public static void main(String args []) throws IOException, FormatException {
+<span class="nc" id="L141">        Demo demo = new Demo();</span>
+<span class="nc" id="L142">        demo.bufferCommands(Arrays.asList(args));</span>
+<span class="nc" id="L143">        demo.run();</span>
+<span class="nc" id="L144">    }</span>
+
+    private static void export(ExportableResult result, String outputDirectory, String filename) throws FileNotFoundException {
+<span class="nc" id="L147">        result.doExport(new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8), true));</span>
+<span class="nc" id="L148">        result.doExport(new PrintWriter(new OutputStreamWriter(new FileOutputStream(Paths.get(outputDirectory, filename).toFile()), StandardCharsets.UTF_8), true));</span>
+<span class="nc" id="L149">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
